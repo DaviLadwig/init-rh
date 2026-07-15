@@ -1,0 +1,19 @@
+# Impede a listagem dos arquivos da pasta.
+Options -Indexes
+
+# Define o arquivo principal da aplicação.
+DirectoryIndex index.php
+
+# Ativa o sistema de reescrita de URLs.
+RewriteEngine On
+
+# Caminho local do projeto no XAMPP.
+RewriteBase /rh-sistema/public/
+
+# Se o arquivo ou pasta solicitado realmente existir,
+# o Apache permite o acesso normalmente.
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Todas as outras requisições são enviadas ao index.php.
+RewriteRule ^ index.php [QSA,L]
