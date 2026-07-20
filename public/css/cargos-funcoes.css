@@ -23,7 +23,7 @@
 ========================================================= */
 
 .catalog-page-header {
-    margin-bottom: 24px;
+    margin-bottom: 18px;
 
     display: flex;
     align-items: flex-end;
@@ -52,7 +52,7 @@
 
     color: #1d2433;
 
-    font-size: clamp(30px, 4vw, 42px);
+    font-size: clamp(27px, 3vw, 36px);
     line-height: 1.08;
     letter-spacing: -0.04em;
 }
@@ -68,7 +68,7 @@
 
 .catalog-back-link {
     width: fit-content;
-    margin-bottom: 20px;
+    margin-bottom: 14px;
 
     display: inline-flex;
     align-items: center;
@@ -106,13 +106,13 @@
 .catalog-secondary-button,
 .catalog-filter-button,
 .catalog-clear-button {
-    min-height: 46px;
-    padding: 0 18px;
+    min-height: 44px;
+    padding: 0 17px;
 
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 6px;
 
     border-radius: 11px;
 
@@ -666,11 +666,27 @@
 ========================================================= */
 
 .catalog-form-card {
-    max-width: 980px;
+    max-width: 920px;
+    overflow: hidden;
+}
+
+.catalog-form {
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(0, 1fr);
+}
+
+.catalog-form > .catalog-form__section:first-of-type {
+    grid-column: 1 / -1;
+}
+
+.catalog-form > .catalog-form__section:nth-of-type(3) {
+    border-left: 1px solid #e7eaf0;
 }
 
 .catalog-form__section {
-    padding: 28px;
+    padding: 22px 24px;
 }
 
 .catalog-form__section + .catalog-form__section {
@@ -678,7 +694,7 @@
 }
 
 .catalog-form__section-header {
-    margin-bottom: 23px;
+    margin-bottom: 16px;
 }
 
 .catalog-form__section-header h2 {
@@ -686,7 +702,7 @@
 
     color: #1d2433;
 
-    font-size: 18px;
+    font-size: 16px;
 }
 
 .catalog-form__section-header p {
@@ -703,13 +719,13 @@
     grid-template-columns:
         minmax(0, 1fr)
         minmax(0, 1fr);
-    gap: 20px;
+    gap: 16px;
 }
 
 .catalog-field {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
 }
 
 .catalog-field--full {
@@ -729,14 +745,14 @@
 
 .catalog-field input {
     width: 100%;
-    height: 48px;
-    padding: 0 14px;
+    height: 44px;
+    padding: 0 13px;
 }
 
 .catalog-field textarea {
     width: 100%;
-    min-height: 128px;
-    padding: 13px 14px;
+    min-height: 92px;
+    padding: 11px 13px;
 
     resize: vertical;
 }
@@ -777,14 +793,29 @@
 ========================================================= */
 
 .catalog-status-switch {
-    width: fit-content;
+    width: 100%;
     max-width: 100%;
+    padding: 13px 14px;
 
     display: flex;
     align-items: center;
-    gap: 13px;
+    gap: 12px;
+
+    background: #fafbfc;
+
+    border: 1px solid #e7eaf0;
+    border-radius: 12px;
 
     cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.catalog-status-switch:hover {
+    background: #fffaf4;
+    border-color: #f1c28d;
 }
 
 .catalog-status-switch input[type="checkbox"] {
@@ -865,7 +896,9 @@
 }
 
 .catalog-form__actions {
-    padding: 20px 28px;
+    grid-column: 1 / -1;
+
+    padding: 16px 24px;
 
     display: flex;
     align-items: center;
@@ -911,6 +944,18 @@
         width: 100%;
     }
 
+    .catalog-form {
+        grid-template-columns: 1fr;
+    }
+
+    .catalog-form > .catalog-form__section:first-of-type {
+        grid-column: auto;
+    }
+
+    .catalog-form > .catalog-form__section:nth-of-type(3) {
+        border-left: 0;
+    }
+
     .catalog-form__grid {
         grid-template-columns: 1fr;
     }
@@ -920,11 +965,11 @@
     }
 
     .catalog-form__section {
-        padding: 22px 18px;
+        padding: 19px 16px;
     }
 
     .catalog-form__actions {
-        padding: 17px 18px;
+        padding: 15px 16px;
 
         align-items: stretch;
         flex-direction: column-reverse;

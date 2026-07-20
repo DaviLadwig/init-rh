@@ -47,8 +47,21 @@ $funcoesAtivo = str_contains(
     '/funcoes'
 );
 
-$cargosOuFuncoesAtivo =
-    $cargosAtivo || $funcoesAtivo;
+$tiposVinculoAtivo = str_contains(
+    $caminhoAtual,
+    '/tipos-vinculo'
+);
+
+$jornadasAtivo = str_contains(
+    $caminhoAtual,
+    '/jornadas'
+);
+
+$catalogosFuncionaisAtivo =
+    $cargosAtivo
+    || $funcoesAtivo
+    || $tiposVinculoAtivo
+    || $jornadasAtivo;
 ?>  
 
 <!DOCTYPE html>
@@ -91,7 +104,7 @@ $cargosOuFuncoesAtivo =
 
     <?php endif; ?>
 
-    <?php if ($cargosOuFuncoesAtivo): ?>
+    <?php if ($catalogosFuncionaisAtivo): ?>
 
         <link
             rel="stylesheet"
@@ -244,6 +257,42 @@ $cargosOuFuncoesAtivo =
                 </span>
 
                 <span>Funções</span>
+            </a>
+
+            <a
+                href="<?= escapar(
+                    appUrl('tipos-vinculo')
+                ) ?>"
+                class="sidebar-link<?= $tiposVinculoAtivo
+                    ? ' sidebar-link--active'
+                    : '' ?>"
+            >
+                <span
+                    class="sidebar-link__icon"
+                    aria-hidden="true"
+                >
+                    ⛓
+                </span>
+
+                <span>Tipos de vínculo</span>
+            </a>
+
+            <a
+                href="<?= escapar(
+                    appUrl('jornadas')
+                ) ?>"
+                class="sidebar-link<?= $jornadasAtivo
+                    ? ' sidebar-link--active'
+                    : '' ?>"
+            >
+                <span
+                    class="sidebar-link__icon"
+                    aria-hidden="true"
+                >
+                    ◷
+                </span>
+
+                <span>Jornadas</span>
             </a>
 
             <span class="sidebar-navigation__title">
@@ -448,7 +497,7 @@ $cargosOuFuncoesAtivo =
         src="<?= escapar(appUrl('js/setores.js')) ?>"
     ></script>
 
-    <?php if ($cargosOuFuncoesAtivo): ?>
+    <?php if ($catalogosFuncionaisAtivo): ?>
 
         <script
             src="<?= escapar(

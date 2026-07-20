@@ -27,6 +27,12 @@ require_once BASE_PATH
     . '/app/repositories/FuncaoRepository.php';
 
 require_once BASE_PATH
+    . '/app/repositories/TipoVinculoRepository.php';
+
+require_once BASE_PATH
+    . '/app/repositories/JornadaTrabalhoRepository.php';
+
+require_once BASE_PATH
     . '/app/services/AutenticacaoService.php';
 
 require_once BASE_PATH
@@ -37,6 +43,12 @@ require_once BASE_PATH
 
 require_once BASE_PATH
     . '/app/services/FuncaoService.php';
+
+require_once BASE_PATH
+    . '/app/services/TipoVinculoService.php';
+
+require_once BASE_PATH
+    . '/app/services/JornadaTrabalhoService.php';
 
 require_once BASE_PATH
     . '/app/controllers/AuthController.php';
@@ -52,6 +64,12 @@ require_once BASE_PATH
 
 require_once BASE_PATH
     . '/app/controllers/FuncaoController.php';
+
+require_once BASE_PATH
+    . '/app/controllers/TipoVinculoController.php';
+
+require_once BASE_PATH
+    . '/app/controllers/JornadaTrabalhoController.php';
 
 /*
 |--------------------------------------------------------------------------
@@ -79,6 +97,12 @@ $cargoRepository =
 $funcaoRepository =
     new FuncaoRepository($pdo);
 
+$tipoVinculoRepository =
+    new TipoVinculoRepository($pdo);
+
+$jornadaTrabalhoRepository =
+    new JornadaTrabalhoRepository($pdo);
+
 /*
 |--------------------------------------------------------------------------
 | Services
@@ -103,6 +127,16 @@ $cargoService =
 $funcaoService =
     new FuncaoService(
         $funcaoRepository
+    );
+
+$tipoVinculoService =
+    new TipoVinculoService(
+        $tipoVinculoRepository
+    );
+
+$jornadaTrabalhoService =
+    new JornadaTrabalhoService(
+        $jornadaTrabalhoRepository
     );
 
 /*
@@ -132,6 +166,16 @@ $cargoController =
 $funcaoController =
     new FuncaoController(
         $funcaoService
+    );
+
+$tipoVinculoController =
+    new TipoVinculoController(
+        $tipoVinculoService
+    );
+
+$jornadaTrabalhoController =
+    new JornadaTrabalhoController(
+        $jornadaTrabalhoService
     );
 
 /*
@@ -362,6 +406,133 @@ return [
                             $funcaoController
                         ): void {
                             $funcaoController->editar();
+                        }
+                    );
+                }
+            );
+        },
+
+
+        /*
+        |------------------------------------------------------------------
+        | Tipos de vínculo
+        |------------------------------------------------------------------
+        */
+
+        '/tipos-vinculo' => static function () use (
+            $tipoVinculoController
+        ): void {
+            AuthMiddleware::executar(
+                static function () use (
+                    $tipoVinculoController
+                ): void {
+                    PermissionMiddleware::executar(
+                        'estrutura.visualizar',
+                        static function () use (
+                            $tipoVinculoController
+                        ): void {
+                            $tipoVinculoController->index();
+                        }
+                    );
+                }
+            );
+        },
+
+        '/tipos-vinculo/criar' => static function () use (
+            $tipoVinculoController
+        ): void {
+            AuthMiddleware::executar(
+                static function () use (
+                    $tipoVinculoController
+                ): void {
+                    PermissionMiddleware::executar(
+                        'estrutura.gerenciar',
+                        static function () use (
+                            $tipoVinculoController
+                        ): void {
+                            $tipoVinculoController->criar();
+                        }
+                    );
+                }
+            );
+        },
+
+        '/tipos-vinculo/editar' => static function () use (
+            $tipoVinculoController
+        ): void {
+            AuthMiddleware::executar(
+                static function () use (
+                    $tipoVinculoController
+                ): void {
+                    PermissionMiddleware::executar(
+                        'estrutura.gerenciar',
+                        static function () use (
+                            $tipoVinculoController
+                        ): void {
+                            $tipoVinculoController->editar();
+                        }
+                    );
+                }
+            );
+        },
+
+        /*
+        |------------------------------------------------------------------
+        | Jornadas de trabalho
+        |------------------------------------------------------------------
+        */
+
+        '/jornadas' => static function () use (
+            $jornadaTrabalhoController
+        ): void {
+            AuthMiddleware::executar(
+                static function () use (
+                    $jornadaTrabalhoController
+                ): void {
+                    PermissionMiddleware::executar(
+                        'estrutura.visualizar',
+                        static function () use (
+                            $jornadaTrabalhoController
+                        ): void {
+                            $jornadaTrabalhoController->index();
+                        }
+                    );
+                }
+            );
+        },
+
+        '/jornadas/criar' => static function () use (
+            $jornadaTrabalhoController
+        ): void {
+            AuthMiddleware::executar(
+                static function () use (
+                    $jornadaTrabalhoController
+                ): void {
+                    PermissionMiddleware::executar(
+                        'estrutura.gerenciar',
+                        static function () use (
+                            $jornadaTrabalhoController
+                        ): void {
+                            $jornadaTrabalhoController->criar();
+                        }
+                    );
+                }
+            );
+        },
+
+        '/jornadas/editar' => static function () use (
+            $jornadaTrabalhoController
+        ): void {
+            AuthMiddleware::executar(
+                static function () use (
+                    $jornadaTrabalhoController
+                ): void {
+                    PermissionMiddleware::executar(
+                        'estrutura.gerenciar',
+                        static function () use (
+                            $jornadaTrabalhoController
+                        ): void {
+                            $jornadaTrabalhoController->editar();
                         }
                     );
                 }
@@ -607,6 +778,133 @@ return [
                             $funcaoController
                         ): void {
                             $funcaoController->alterarStatus();
+                        }
+                    );
+                }
+            );
+        },
+
+
+        /*
+        |------------------------------------------------------------------
+        | Tipos de vínculo
+        |------------------------------------------------------------------
+        */
+
+        '/tipos-vinculo/criar' => static function () use (
+            $tipoVinculoController
+        ): void {
+            AuthMiddleware::executar(
+                static function () use (
+                    $tipoVinculoController
+                ): void {
+                    PermissionMiddleware::executar(
+                        'estrutura.gerenciar',
+                        static function () use (
+                            $tipoVinculoController
+                        ): void {
+                            $tipoVinculoController->salvar();
+                        }
+                    );
+                }
+            );
+        },
+
+        '/tipos-vinculo/editar' => static function () use (
+            $tipoVinculoController
+        ): void {
+            AuthMiddleware::executar(
+                static function () use (
+                    $tipoVinculoController
+                ): void {
+                    PermissionMiddleware::executar(
+                        'estrutura.gerenciar',
+                        static function () use (
+                            $tipoVinculoController
+                        ): void {
+                            $tipoVinculoController->atualizar();
+                        }
+                    );
+                }
+            );
+        },
+
+        '/tipos-vinculo/alterar-status' => static function () use (
+            $tipoVinculoController
+        ): void {
+            AuthMiddleware::executar(
+                static function () use (
+                    $tipoVinculoController
+                ): void {
+                    PermissionMiddleware::executar(
+                        'estrutura.gerenciar',
+                        static function () use (
+                            $tipoVinculoController
+                        ): void {
+                            $tipoVinculoController->alterarStatus();
+                        }
+                    );
+                }
+            );
+        },
+
+        /*
+        |------------------------------------------------------------------
+        | Jornadas de trabalho
+        |------------------------------------------------------------------
+        */
+
+        '/jornadas/criar' => static function () use (
+            $jornadaTrabalhoController
+        ): void {
+            AuthMiddleware::executar(
+                static function () use (
+                    $jornadaTrabalhoController
+                ): void {
+                    PermissionMiddleware::executar(
+                        'estrutura.gerenciar',
+                        static function () use (
+                            $jornadaTrabalhoController
+                        ): void {
+                            $jornadaTrabalhoController->salvar();
+                        }
+                    );
+                }
+            );
+        },
+
+        '/jornadas/editar' => static function () use (
+            $jornadaTrabalhoController
+        ): void {
+            AuthMiddleware::executar(
+                static function () use (
+                    $jornadaTrabalhoController
+                ): void {
+                    PermissionMiddleware::executar(
+                        'estrutura.gerenciar',
+                        static function () use (
+                            $jornadaTrabalhoController
+                        ): void {
+                            $jornadaTrabalhoController->atualizar();
+                        }
+                    );
+                }
+            );
+        },
+
+        '/jornadas/alterar-status' => static function () use (
+            $jornadaTrabalhoController
+        ): void {
+            AuthMiddleware::executar(
+                static function () use (
+                    $jornadaTrabalhoController
+                ): void {
+                    PermissionMiddleware::executar(
+                        'estrutura.gerenciar',
+                        static function () use (
+                            $jornadaTrabalhoController
+                        ): void {
+                            $jornadaTrabalhoController->alterarStatus();
                         }
                     );
                 }
