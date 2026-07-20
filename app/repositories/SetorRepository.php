@@ -313,8 +313,8 @@ class SetorRepository
         return (int) $stmt->fetchColumn();
     }
 
-    /**
-     * Atualiza um setor da organização.
+  /**
+     * Atualiza os dados de um setor.
      */
     public function atualizar(
         int $setorId,
@@ -331,24 +331,98 @@ class SetorRepository
                 email = :email,
                 ativo = :ativo,
                 atualizado_em = CURRENT_TIMESTAMP
-
             WHERE id = :setor_id
-              AND organizacao_id = :organizacao_id
-              AND excluido_em IS NULL
+            AND organizacao_id = :organizacao_id
+            AND excluido_em IS NULL
         ';
 
         $stmt = $this->pdo->prepare($sql);
 
-        $stmt->execute([
-            ':nome' => $dados['nome'],
-            ':sigla' => $dados['sigla'],
-            ':descricao' => $dados['descricao'],
-            ':telefone' => $dados['telefone'],
-            ':email' => $dados['email'],
-            ':ativo' => $dados['ativo'],
-            ':setor_id' => $setorId,
-            ':organizacao_id' => $organizacaoId,
-        ]);
+        $stmt->bindValue(
+            ':nome',
+            (string) $dados['nome'],
+            PDO::PARAM_STR
+        );
+
+        if ($dados['sigla'] === null) {
+            $stmt->bindValue(
+                ':sigla',
+                null,
+                PDO::PARAM_NULL
+            );
+        } else {
+            $stmt->bindValue(
+                ':sigla',
+                (string) $dados['sigla'],
+                PDO::PARAM_STR
+            );
+        }
+
+        if ($dados['descricao'] === null) {
+            $stmt->bindValue(
+                ':descricao',
+                null,
+                PDO::PARAM_NULL
+            );
+        } else {
+            $stmt->bindValue(
+                ':descricao',
+                (string) $dados['descricao'],
+                PDO::PARAM_STR
+            );
+        }
+
+        if ($dados['telefone'] === null) {
+            $stmt->bindValue(
+                ':telefone',
+                null,
+                PDO::PARAM_NULL
+            );
+        } else {
+            $stmt->bindValue(
+                ':telefone',
+                (string) $dados['telefone'],
+                PDO::PARAM_STR
+            );
+        }
+
+        if ($dados['email'] === null) {
+            $stmt->bindValue(
+                ':email',
+                null,
+                PDO::PARAM_NULL
+            );
+        } else {
+            $stmt->bindValue(
+                ':email',
+                (string) $dados['email'],
+                PDO::PARAM_STR
+            );
+        }
+
+    /*
+     * Fundamental para impedir que o false seja enviado
+     * ao PostgreSQL como string vazia.
+     */
+        $stmt->bindValue(
+            ':ativo',
+            (bool) $dados['ativo'],
+            PDO::PARAM_BOOL
+        );
+
+        $stmt->bindValue(
+            ':setor_id',
+            $setorId,
+            PDO::PARAM_INT
+        );
+
+        $stmt->bindValue(
+            ':organizacao_id',
+            $organizacaoId,
+            PDO::PARAM_INT
+        );
+
+        $stmt->execute();
 
         return $stmt->rowCount() > 0;
     }

@@ -2,33 +2,23 @@
 
 declare(strict_types=1);
 
-/*
-|--------------------------------------------------------------------------
-| Variáveis recebidas pelo SetorController
-|--------------------------------------------------------------------------
-*/
-
 /** @var array<string, mixed> $dadosFormulario */
 /** @var array<string, string> $errosFormulario */
 /** @var string|null $erro */
 
 $dadosFormulario =
-    isset($dadosFormulario)
-    && is_array($dadosFormulario)
+    isset($dadosFormulario) && is_array($dadosFormulario)
         ? $dadosFormulario
         : [];
 
 $errosFormulario =
-    isset($errosFormulario)
-    && is_array($errosFormulario)
+    isset($errosFormulario) && is_array($errosFormulario)
         ? $errosFormulario
         : [];
 
-$erro =
-    isset($erro)
-    && is_string($erro)
-        ? $erro
-        : null;
+$erro = isset($erro) && is_string($erro)
+    ? $erro
+    : null;
 
 /*
 |--------------------------------------------------------------------------
@@ -37,43 +27,25 @@ $erro =
 */
 
 $nome = trim(
-    (string) (
-        $dadosFormulario['nome']
-        ?? ''
-    )
+    (string) ($dadosFormulario['nome'] ?? '')
 );
 
 $sigla = trim(
-    (string) (
-        $dadosFormulario['sigla']
-        ?? ''
-    )
+    (string) ($dadosFormulario['sigla'] ?? '')
 );
 
 $email = trim(
-    (string) (
-        $dadosFormulario['email']
-        ?? ''
-    )
+    (string) ($dadosFormulario['email'] ?? '')
 );
 
 $telefone = trim(
-    (string) (
-        $dadosFormulario['telefone']
-        ?? ''
-    )
+    (string) ($dadosFormulario['telefone'] ?? '')
 );
 
 $descricao = trim(
-    (string) (
-        $dadosFormulario['descricao']
-        ?? ''
-    )
+    (string) ($dadosFormulario['descricao'] ?? '')
 );
 
-/*
- * Um novo setor começa ativo por padrão.
- */
 $ativo = array_key_exists(
     'ativo',
     $dadosFormulario
@@ -96,33 +68,34 @@ $ativo = array_key_exists(
 
 <?php endif; ?>
 
-<section class="page-header">
 
-    <div class="page-header__content">
+<section class="sector-page-header">
+
+    <div class="sector-page-header__content">
 
         <a
             href="<?= escapar(appUrl('setores')) ?>"
-            class="page-back-link"
+            class="sector-back-link"
         >
             <svg
                 viewBox="0 0 24 24"
                 aria-hidden="true"
             >
-                <path d="m15 18-6-6 6-6" />
+                <path d="m15 18-6-6 6-6"></path>
             </svg>
 
             <span>Voltar para setores</span>
         </a>
 
-        <span class="page-eyebrow">
+        <span class="sector-eyebrow">
             Estrutura organizacional
         </span>
 
         <h1>Novo setor</h1>
 
         <p>
-            Cadastre um departamento interno do prédio da
-            Secretaria Municipal de Saúde.
+            Cadastre um setor interno da Secretaria Municipal
+            de Saúde.
         </p>
 
     </div>
@@ -135,7 +108,6 @@ $ativo = array_key_exists(
         method="POST"
         action="<?= escapar(appUrl('setores/criar')) ?>"
         class="sector-form"
-        autocomplete="off"
         novalidate
     >
 
@@ -145,24 +117,22 @@ $ativo = array_key_exists(
 
             <header class="sector-form__section-header">
 
-                <div>
-                    <h2>Informações do setor</h2>
+                <h2>Identificação do setor</h2>
 
-                    <p>
-                        Informe os dados utilizados para identificar
-                        e organizar o setor.
-                    </p>
-                </div>
+                <p>
+                    Informe o nome e a sigla utilizados para
+                    identificar o setor.
+                </p>
 
             </header>
 
             <div class="sector-form__grid">
 
-                <div class="form-field">
+                <div class="sector-field">
 
                     <label for="nome">
                         Nome do setor
-                        <span aria-hidden="true">*</span>
+                        <span>*</span>
                     </label>
 
                     <input
@@ -172,20 +142,12 @@ $ativo = array_key_exists(
                         value="<?= escapar($nome) ?>"
                         maxlength="120"
                         placeholder="Ex.: Recursos Humanos"
-                        autocomplete="organization-title"
                         class="<?= isset(
                             $errosFormulario['nome']
                         )
                             ? 'is-invalid'
                             : '' ?>"
-                        aria-invalid="<?= isset(
-                            $errosFormulario['nome']
-                        )
-                            ? 'true'
-                            : 'false' ?>"
-                        <?= isset($errosFormulario['nome'])
-                            ? 'aria-describedby="erro-nome"'
-                            : '' ?>
+                        autocomplete="organization-title"
                         autofocus
                         required
                     >
@@ -194,26 +156,17 @@ $ativo = array_key_exists(
                         isset($errosFormulario['nome'])
                     ): ?>
 
-                        <small
-                            class="form-error"
-                            id="erro-nome"
-                        >
+                        <small class="sector-form-error">
                             <?= escapar(
-                                (string) $errosFormulario['nome']
+                                $errosFormulario['nome']
                             ) ?>
-                        </small>
-
-                    <?php else: ?>
-
-                        <small class="form-help">
-                            Campo obrigatório.
                         </small>
 
                     <?php endif; ?>
 
                 </div>
 
-                <div class="form-field">
+                <div class="sector-field">
 
                     <label for="sigla">
                         Sigla
@@ -231,14 +184,6 @@ $ativo = array_key_exists(
                         )
                             ? 'is-invalid'
                             : '' ?>"
-                        aria-invalid="<?= isset(
-                            $errosFormulario['sigla']
-                        )
-                            ? 'true'
-                            : 'false' ?>"
-                        <?= isset($errosFormulario['sigla'])
-                            ? 'aria-describedby="erro-sigla"'
-                            : 'aria-describedby="ajuda-sigla"' ?>
                         data-uppercase
                     >
 
@@ -246,32 +191,46 @@ $ativo = array_key_exists(
                         isset($errosFormulario['sigla'])
                     ): ?>
 
-                        <small
-                            class="form-error"
-                            id="erro-sigla"
-                        >
+                        <small class="sector-form-error">
                             <?= escapar(
-                                (string) $errosFormulario['sigla']
+                                $errosFormulario['sigla']
                             ) ?>
                         </small>
 
                     <?php else: ?>
 
-                        <small
-                            class="form-help"
-                            id="ajuda-sigla"
-                        >
-                            Utilize letras, números, hífen ou sublinhado.
+                        <small class="sector-form-help">
+                            Use uma identificação curta, como RH,
+                            FIN ou ADM.
                         </small>
 
                     <?php endif; ?>
 
                 </div>
 
-                <div class="form-field">
+            </div>
+
+        </div>
+
+        <div class="sector-form__section">
+
+            <header class="sector-form__section-header">
+
+                <h2>Contato</h2>
+
+                <p>
+                    Os dados de contato são opcionais e podem ser
+                    atualizados posteriormente.
+                </p>
+
+            </header>
+
+            <div class="sector-form__grid">
+
+                <div class="sector-field">
 
                     <label for="email">
-                        E-mail do setor
+                        E-mail
                     </label>
 
                     <input
@@ -281,32 +240,21 @@ $ativo = array_key_exists(
                         value="<?= escapar($email) ?>"
                         maxlength="150"
                         placeholder="Ex.: rh@saude.com"
-                        autocomplete="email"
                         class="<?= isset(
                             $errosFormulario['email']
                         )
                             ? 'is-invalid'
                             : '' ?>"
-                        aria-invalid="<?= isset(
-                            $errosFormulario['email']
-                        )
-                            ? 'true'
-                            : 'false' ?>"
-                        <?= isset($errosFormulario['email'])
-                            ? 'aria-describedby="erro-email"'
-                            : '' ?>
+                        autocomplete="email"
                     >
 
                     <?php if (
                         isset($errosFormulario['email'])
                     ): ?>
 
-                        <small
-                            class="form-error"
-                            id="erro-email"
-                        >
+                        <small class="sector-form-error">
                             <?= escapar(
-                                (string) $errosFormulario['email']
+                                $errosFormulario['email']
                             ) ?>
                         </small>
 
@@ -314,7 +262,7 @@ $ativo = array_key_exists(
 
                 </div>
 
-                <div class="form-field">
+                <div class="sector-field">
 
                     <label for="telefone">
                         Telefone
@@ -327,34 +275,23 @@ $ativo = array_key_exists(
                         value="<?= escapar($telefone) ?>"
                         maxlength="20"
                         placeholder="Ex.: (98) 99999-9999"
-                        autocomplete="tel"
-                        inputmode="tel"
                         class="<?= isset(
                             $errosFormulario['telefone']
                         )
                             ? 'is-invalid'
                             : '' ?>"
-                        aria-invalid="<?= isset(
-                            $errosFormulario['telefone']
-                        )
-                            ? 'true'
-                            : 'false' ?>"
-                        <?= isset($errosFormulario['telefone'])
-                            ? 'aria-describedby="erro-telefone"'
-                            : '' ?>
-                        data-phone
+                        inputmode="numeric"
+                        autocomplete="tel"
+                        data-phone-mask
                     >
 
                     <?php if (
                         isset($errosFormulario['telefone'])
                     ): ?>
 
-                        <small
-                            class="form-error"
-                            id="erro-telefone"
-                        >
+                        <small class="sector-form-error">
                             <?= escapar(
-                                (string) $errosFormulario['telefone']
+                                $errosFormulario['telefone']
                             ) ?>
                         </small>
 
@@ -362,10 +299,34 @@ $ativo = array_key_exists(
 
                 </div>
 
-                <div class="form-field form-field--full">
+            </div>
+
+        </div>
+
+        <div class="sector-form__section">
+
+            <header class="sector-form__section-header">
+
+                <h2>Descrição</h2>
+
+                <p>
+                    Registre resumidamente as responsabilidades
+                    desse setor.
+                </p>
+
+            </header>
+
+            <div class="sector-form__grid">
+
+                <div
+                    class="
+                        sector-field
+                        sector-field--full
+                    "
+                >
 
                     <label for="descricao">
-                        Descrição
+                        Descrição do setor
                     </label>
 
                     <textarea
@@ -373,41 +334,27 @@ $ativo = array_key_exists(
                         name="descricao"
                         maxlength="2000"
                         rows="5"
-                        placeholder="Descreva as principais responsabilidades e atividades do setor."
+                        placeholder="Descreva as principais atividades e responsabilidades do setor."
                         class="<?= isset(
                             $errosFormulario['descricao']
                         )
                             ? 'is-invalid'
                             : '' ?>"
-                        aria-invalid="<?= isset(
-                            $errosFormulario['descricao']
-                        )
-                            ? 'true'
-                            : 'false' ?>"
-                        <?= isset($errosFormulario['descricao'])
-                            ? 'aria-describedby="erro-descricao"'
-                            : 'aria-describedby="ajuda-descricao"' ?>
                     ><?= escapar($descricao) ?></textarea>
 
                     <?php if (
                         isset($errosFormulario['descricao'])
                     ): ?>
 
-                        <small
-                            class="form-error"
-                            id="erro-descricao"
-                        >
+                        <small class="sector-form-error">
                             <?= escapar(
-                                (string) $errosFormulario['descricao']
+                                $errosFormulario['descricao']
                             ) ?>
                         </small>
 
                     <?php else: ?>
 
-                        <small
-                            class="form-help"
-                            id="ajuda-descricao"
-                        >
+                        <small class="sector-form-help">
                             Campo opcional, com até 2.000 caracteres.
                         </small>
 
@@ -423,23 +370,17 @@ $ativo = array_key_exists(
 
             <header class="sector-form__section-header">
 
-                <div>
-                    <h2>Situação do setor</h2>
+                <h2>Situação</h2>
 
-                    <p>
-                        Defina se o setor ficará disponível imediatamente
-                        para os próximos cadastros.
-                    </p>
-                </div>
+                <p>
+                    Defina se o setor ficará disponível para uso
+                    imediatamente.
+                </p>
 
             </header>
 
-            <label class="status-switch">
+            <label class="sector-status-switch">
 
-                <!--
-                    Este campo será enviado quando o checkbox
-                    estiver desmarcado.
-                -->
                 <input
                     type="hidden"
                     name="ativo"
@@ -454,17 +395,17 @@ $ativo = array_key_exists(
                 >
 
                 <span
-                    class="status-switch__control"
+                    class="sector-status-switch__control"
                     aria-hidden="true"
                 ></span>
 
-                <span class="status-switch__content">
+                <span class="sector-status-switch__content">
 
                     <strong>Setor ativo</strong>
 
                     <small>
-                        Setores ativos poderão ser associados aos
-                        colaboradores futuramente.
+                        Setores ativos poderão ser vinculados aos
+                        colaboradores.
                     </small>
 
                 </span>
@@ -477,28 +418,16 @@ $ativo = array_key_exists(
 
             <a
                 href="<?= escapar(appUrl('setores')) ?>"
-                class="form-secondary-button"
+                class="sector-secondary-button"
             >
                 Cancelar
             </a>
 
             <button
                 type="submit"
-                class="page-primary-button"
+                class="sector-primary-button"
             >
-                <svg
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                >
-                    <path
-                        d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"
-                    />
-
-                    <path d="M17 21v-8H7v8" />
-                    <path d="M7 3v5h8" />
-                </svg>
-
-                <span>Salvar setor</span>
+                Salvar setor
             </button>
 
         </footer>

@@ -892,3 +892,572 @@
         flex: 1;
     }
 }
+
+
+/*
+==========================================
+PAGINA CREATE 
+==========================================
+*/
+
+/* =========================================================
+   FORMULÁRIO DE SETORES
+========================================================= */
+
+.sector-page-header {
+    margin-bottom: 24px;
+
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.sector-page-header__content {
+    max-width: 760px;
+}
+
+.sector-eyebrow {
+    display: block;
+    margin-bottom: 8px;
+
+    color: #e97706;
+
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.sector-page-header h1 {
+    margin: 0 0 9px;
+
+    color: #1f2937;
+
+    font-size: clamp(28px, 4vw, 40px);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.04em;
+}
+
+.sector-page-header p {
+    max-width: 650px;
+    margin: 0;
+
+    color: #6b7280;
+
+    font-size: 14px;
+    line-height: 1.65;
+}
+
+/* =========================================================
+   LINK VOLTAR
+========================================================= */
+
+.sector-back-link {
+    width: fit-content;
+    margin-bottom: 20px;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+
+    color: #6b7280;
+
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+
+    transition:
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.sector-back-link:hover {
+    color: #e97706;
+    transform: translateX(-2px);
+}
+
+.sector-back-link svg {
+    width: 17px;
+    height: 17px;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* =========================================================
+   CARD DO FORMULÁRIO
+========================================================= */
+
+.sector-form-card {
+    width: 100%;
+    max-width: 980px;
+
+    overflow: hidden;
+
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+
+    box-shadow:
+        0 12px 35px rgba(15, 23, 42, 0.055);
+}
+
+.sector-form {
+    width: 100%;
+}
+
+/* =========================================================
+   SEÇÕES DO FORMULÁRIO
+========================================================= */
+
+.sector-form__section {
+    padding: 28px;
+}
+
+.sector-form__section + .sector-form__section {
+    border-top: 1px solid #edf0f3;
+}
+
+.sector-form__section-header {
+    margin-bottom: 23px;
+}
+
+.sector-form__section-header h2 {
+    margin: 0 0 6px;
+
+    color: #1f2937;
+
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.sector-form__section-header p {
+    margin: 0;
+
+    color: #6b7280;
+
+    font-size: 12px;
+    line-height: 1.55;
+}
+
+/* =========================================================
+   GRID
+========================================================= */
+
+.sector-form__grid {
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(0, 1fr);
+    gap: 20px;
+}
+
+.sector-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sector-field--full {
+    grid-column: 1 / -1;
+}
+
+/* =========================================================
+   CAMPOS
+========================================================= */
+
+.sector-field label {
+    color: #374151;
+
+    font-size: 12px;
+    font-weight: 750;
+}
+
+.sector-field label span {
+    color: #e97706;
+}
+
+.sector-field input,
+.sector-field textarea {
+    width: 100%;
+
+    color: #1f2937;
+    background: #f9fafb;
+
+    border: 1px solid #dfe3e8;
+    border-radius: 11px;
+
+    outline: none;
+
+    font: inherit;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.sector-field input {
+    height: 48px;
+    padding: 0 14px;
+}
+
+.sector-field textarea {
+    min-height: 128px;
+    padding: 13px 14px;
+
+    line-height: 1.55;
+
+    resize: vertical;
+}
+
+.sector-field input::placeholder,
+.sector-field textarea::placeholder {
+    color: #a2a8b2;
+}
+
+.sector-field input:hover,
+.sector-field textarea:hover {
+    border-color: #cdd2d9;
+}
+
+.sector-field input:focus,
+.sector-field textarea:focus {
+    background: #ffffff;
+
+    border-color: #f28a17;
+
+    box-shadow:
+        0 0 0 4px rgba(242, 138, 23, 0.12);
+}
+
+/* =========================================================
+   ERROS E TEXTOS AUXILIARES
+========================================================= */
+
+.sector-field .is-invalid {
+    background: #fffafa;
+    border-color: #d92d20;
+}
+
+.sector-field .is-invalid:focus {
+    border-color: #d92d20;
+
+    box-shadow:
+        0 0 0 4px rgba(217, 45, 32, 0.1);
+}
+
+.sector-form-error {
+    color: #b42318;
+
+    font-size: 11px;
+    line-height: 1.45;
+}
+
+.sector-form-help {
+    color: #7b8492;
+
+    font-size: 10px;
+    line-height: 1.45;
+}
+
+/* =========================================================
+   INTERRUPTOR DE SITUAÇÃO
+========================================================= */
+
+.sector-status-switch {
+    width: fit-content;
+    max-width: 100%;
+
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    cursor: pointer;
+}
+
+.sector-status-switch input[type="checkbox"] {
+    position: absolute;
+
+    width: 1px;
+    height: 1px;
+
+    opacity: 0;
+    pointer-events: none;
+}
+
+.sector-status-switch__control {
+    position: relative;
+
+    width: 50px;
+    height: 28px;
+
+    flex: 0 0 auto;
+
+    background: #cbd0d7;
+
+    border-radius: 999px;
+
+    transition:
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.sector-status-switch__control::after {
+    content: "";
+
+    position: absolute;
+    top: 4px;
+    left: 4px;
+
+    width: 20px;
+    height: 20px;
+
+    background: #ffffff;
+
+    border-radius: 50%;
+
+    box-shadow:
+        0 2px 7px rgba(15, 23, 42, 0.22);
+
+    transition: transform 0.2s ease;
+}
+
+.sector-status-switch input[type="checkbox"]:checked
++ .sector-status-switch__control {
+    background:
+        linear-gradient(
+            135deg,
+            #f7941d,
+            #e46f05
+        );
+}
+
+.sector-status-switch input[type="checkbox"]:checked
++ .sector-status-switch__control::after {
+    transform: translateX(22px);
+}
+
+.sector-status-switch input[type="checkbox"]:focus-visible
++ .sector-status-switch__control {
+    box-shadow:
+        0 0 0 4px rgba(242, 138, 23, 0.16);
+}
+
+.sector-status-switch__content {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.sector-status-switch__content strong {
+    color: #1f2937;
+
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.sector-status-switch__content small {
+    color: #6b7280;
+
+    font-size: 10px;
+    line-height: 1.45;
+}
+
+/* =========================================================
+   RODAPÉ E BOTÕES
+========================================================= */
+
+.sector-form__actions {
+    padding: 20px 28px;
+
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+
+    background: #fafbfc;
+
+    border-top: 1px solid #e7eaf0;
+}
+
+.sector-primary-button,
+.sector-secondary-button {
+    min-height: 46px;
+    padding: 0 19px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 11px;
+
+    font-size: 13px;
+    font-weight: 750;
+    text-decoration: none;
+
+    cursor: pointer;
+
+    transition:
+        color 0.2s ease,
+        background 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+.sector-primary-button {
+    color: #ffffff;
+    background:
+        linear-gradient(
+            135deg,
+            #f7941d,
+            #e46f05
+        );
+
+    border: 0;
+
+    box-shadow:
+        0 11px 25px rgba(228, 111, 5, 0.24);
+}
+
+.sector-primary-button:hover {
+    color: #ffffff;
+
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 14px 30px rgba(228, 111, 5, 0.3);
+}
+
+.sector-primary-button:active {
+    transform: translateY(0);
+}
+
+.sector-secondary-button {
+    color: #4b5563;
+    background: #ffffff;
+
+    border: 1px solid #dfe3e8;
+}
+
+.sector-secondary-button:hover {
+    color: #e46f05;
+
+    border-color: #f2b46b;
+    background: #fffaf4;
+}
+
+/* =========================================================
+   ALERTA DE ERRO
+========================================================= */
+
+.alert {
+    width: 100%;
+    max-width: 980px;
+    margin-bottom: 18px;
+    padding: 14px 16px;
+
+    border-radius: 11px;
+
+    font-size: 12px;
+    font-weight: 650;
+    line-height: 1.5;
+}
+
+.alert--error {
+    color: #a61b12;
+    background: #fff1f0;
+
+    border: 1px solid #ffc8c3;
+}
+
+.alert--success {
+    color: #176b47;
+    background: #eaf8f1;
+
+    border: 1px solid #bce4d0;
+}
+
+/* =========================================================
+   ANIMAÇÃO DE ENTRADA
+========================================================= */
+
+.sector-page-header,
+.sector-form-card {
+    animation: sectorFormEnter 0.42s ease both;
+}
+
+.sector-form-card {
+    animation-delay: 0.06s;
+}
+
+@keyframes sectorFormEnter {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* =========================================================
+   RESPONSIVIDADE
+========================================================= */
+
+@media (max-width: 760px) {
+    .sector-form__grid {
+        grid-template-columns: 1fr;
+    }
+
+    .sector-field--full {
+        grid-column: auto;
+    }
+
+    .sector-form__section {
+        padding: 23px 20px;
+    }
+
+    .sector-form__actions {
+        padding: 18px 20px;
+
+        align-items: stretch;
+        flex-direction: column-reverse;
+    }
+
+    .sector-form__actions a,
+    .sector-form__actions button {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .sector-page-header h1 {
+        font-size: 29px;
+    }
+
+    .sector-form-card {
+        border-radius: 14px;
+    }
+
+    .sector-form__section {
+        padding: 20px 16px;
+    }
+
+    .sector-form__actions {
+        padding: 16px;
+    }
+
+    .sector-status-switch {
+        align-items: flex-start;
+    }
+}

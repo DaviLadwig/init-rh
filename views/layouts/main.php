@@ -81,10 +81,15 @@ $cargosOuFuncoesAtivo =
         rel="stylesheet"
         href="<?= escapar(appUrl('css/dashboard.css')) ?>"
     >
-    <link
-        rel="stylesheet"
-        href="<?= escapar(appUrl('css/setores.css')) ?>"
-    >
+    
+    <?php if ($setoresAtivo): ?>
+
+        <link
+            rel="stylesheet"
+            href="<?= escapar(appUrl('css/setores.css')) ?>"
+        >
+
+    <?php endif; ?>
 
     <?php if ($cargosOuFuncoesAtivo): ?>
 

@@ -46,7 +46,7 @@ require_once BASE_PATH
 
 require_once BASE_PATH
     . '/app/controllers/SetorController.php';
-    
+
 require_once BASE_PATH
     . '/app/controllers/CargoController.php';
 
@@ -72,7 +72,7 @@ $usuarioRepository =
 
 $setorRepository =
     new SetorRepository($pdo);
-    
+
 $cargoRepository =
     new CargoRepository($pdo);
 
@@ -133,6 +133,7 @@ $funcaoController =
     new FuncaoController(
         $funcaoService
     );
+
 /*
 |--------------------------------------------------------------------------
 | Rotas
@@ -179,9 +180,9 @@ return [
         },
 
         /*
-        |--------------------------------------------------------------------------
+        |------------------------------------------------------------------
         | Setores
-        |--------------------------------------------------------------------------
+        |------------------------------------------------------------------
         */
 
         '/setores' => static function () use (
@@ -242,29 +243,9 @@ return [
         },
 
         /*
-         * Diagnóstico temporário.
-         */
-        '/teste' => static function (): void {
-            header(
-                'Content-Type: application/json; charset=UTF-8'
-            );
-
-            echo json_encode(
-                [
-                    'sucesso' => true,
-                    'mensagem' =>
-                        'O roteamento está funcionando.',
-                ],
-                JSON_UNESCAPED_UNICODE
-                | JSON_UNESCAPED_SLASHES
-                | JSON_PRETTY_PRINT
-            );
-        },
-
-        /*
-        |--------------------------------------------------------------------------
+        |------------------------------------------------------------------
         | Cargos
-        |--------------------------------------------------------------------------
+        |------------------------------------------------------------------
         */
 
         '/cargos' => static function () use (
@@ -325,9 +306,9 @@ return [
         },
 
         /*
-        |--------------------------------------------------------------------------
+        |------------------------------------------------------------------
         | Funções
-        |--------------------------------------------------------------------------
+        |------------------------------------------------------------------
         */
 
         '/funcoes' => static function () use (
@@ -387,6 +368,26 @@ return [
             );
         },
 
+        /*
+         * Diagnóstico temporário.
+         */
+        '/teste' => static function (): void {
+            header(
+                'Content-Type: application/json; charset=UTF-8'
+            );
+
+            echo json_encode(
+                [
+                    'sucesso' => true,
+                    'mensagem' =>
+                        'O roteamento está funcionando.',
+                ],
+                JSON_UNESCAPED_UNICODE
+                | JSON_UNESCAPED_SLASHES
+                | JSON_PRETTY_PRINT
+            );
+        },
+
     ],
 
     'POST' => [
@@ -404,8 +405,7 @@ return [
                 static function () use (
                     $authController
                 ): void {
-                    $authController
-                        ->salvarNovaSenha();
+                    $authController->salvarNovaSenha();
                 },
                 true
             );
@@ -425,9 +425,9 @@ return [
         },
 
         /*
-        |--------------------------------------------------------------------------
+        |------------------------------------------------------------------
         | Setores
-        |--------------------------------------------------------------------------
+        |------------------------------------------------------------------
         */
 
         '/setores/criar' => static function () use (
@@ -480,8 +480,133 @@ return [
                         static function () use (
                             $setorController
                         ): void {
-                            $setorController
-                                ->alterarStatus();
+                            $setorController->alterarStatus();
+                        }
+                    );
+                }
+            );
+        },
+
+        /*
+        |------------------------------------------------------------------
+        | Cargos
+        |------------------------------------------------------------------
+        */
+
+        '/cargos/criar' => static function () use (
+            $cargoController
+        ): void {
+            AuthMiddleware::executar(
+                static function () use (
+                    $cargoController
+                ): void {
+                    PermissionMiddleware::executar(
+                        'estrutura.gerenciar',
+                        static function () use (
+                            $cargoController
+                        ): void {
+                            $cargoController->salvar();
+                        }
+                    );
+                }
+            );
+        },
+
+        '/cargos/editar' => static function () use (
+            $cargoController
+        ): void {
+            AuthMiddleware::executar(
+                static function () use (
+                    $cargoController
+                ): void {
+                    PermissionMiddleware::executar(
+                        'estrutura.gerenciar',
+                        static function () use (
+                            $cargoController
+                        ): void {
+                            $cargoController->atualizar();
+                        }
+                    );
+                }
+            );
+        },
+
+        '/cargos/alterar-status' => static function () use (
+            $cargoController
+        ): void {
+            AuthMiddleware::executar(
+                static function () use (
+                    $cargoController
+                ): void {
+                    PermissionMiddleware::executar(
+                        'estrutura.gerenciar',
+                        static function () use (
+                            $cargoController
+                        ): void {
+                            $cargoController->alterarStatus();
+                        }
+                    );
+                }
+            );
+        },
+
+        /*
+        |------------------------------------------------------------------
+        | Funções
+        |------------------------------------------------------------------
+        */
+
+        '/funcoes/criar' => static function () use (
+            $funcaoController
+        ): void {
+            AuthMiddleware::executar(
+                static function () use (
+                    $funcaoController
+                ): void {
+                    PermissionMiddleware::executar(
+                        'estrutura.gerenciar',
+                        static function () use (
+                            $funcaoController
+                        ): void {
+                            $funcaoController->salvar();
+                        }
+                    );
+                }
+            );
+        },
+
+        '/funcoes/editar' => static function () use (
+            $funcaoController
+        ): void {
+            AuthMiddleware::executar(
+                static function () use (
+                    $funcaoController
+                ): void {
+                    PermissionMiddleware::executar(
+                        'estrutura.gerenciar',
+                        static function () use (
+                            $funcaoController
+                        ): void {
+                            $funcaoController->atualizar();
+                        }
+                    );
+                }
+            );
+        },
+
+        '/funcoes/alterar-status' => static function () use (
+            $funcaoController
+        ): void {
+            AuthMiddleware::executar(
+                static function () use (
+                    $funcaoController
+                ): void {
+                    PermissionMiddleware::executar(
+                        'estrutura.gerenciar',
+                        static function () use (
+                            $funcaoController
+                        ): void {
+                            $funcaoController->alterarStatus();
                         }
                     );
                 }
@@ -489,131 +614,5 @@ return [
         },
 
     ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Funções
-    |--------------------------------------------------------------------------
-    */
-
-    '/funcoes' => static function () use (
-        $funcaoController
-    ): void {
-        AuthMiddleware::executar(
-            static function () use (
-                $funcaoController
-            ): void {
-                PermissionMiddleware::executar(
-                    'estrutura.visualizar',
-                    static function () use (
-                        $funcaoController
-                    ): void {
-                        $funcaoController->index();
-                    }
-                );
-            }
-        );
-    },
-
-    '/funcoes/criar' => static function () use (
-        $funcaoController
-    ): void {
-        AuthMiddleware::executar(
-            static function () use (
-                $funcaoController
-            ): void {
-                PermissionMiddleware::executar(
-                    'estrutura.gerenciar',
-                    static function () use (
-                        $funcaoController
-                    ): void {
-                        $funcaoController->criar();
-                    }
-                );
-            }
-        );
-    },
-
-    '/funcoes/editar' => static function () use (
-        $funcaoController
-    ): void {
-        AuthMiddleware::executar(
-            static function () use (
-                $funcaoController
-            ): void {
-                PermissionMiddleware::executar(
-                    'estrutura.gerenciar',
-                    static function () use (
-                        $funcaoController
-                    ): void {
-                        $funcaoController->editar();
-                    }
-                );
-            }
-        );
-    },
-
-    /*
-    |--------------------------------------------------------------------------
-    | Funções
-    |--------------------------------------------------------------------------
-    */
-
-    '/funcoes/criar' => static function () use (
-        $funcaoController
-    ): void {
-        AuthMiddleware::executar(
-            static function () use (
-                $funcaoController
-            ): void {
-                PermissionMiddleware::executar(
-                    'estrutura.gerenciar',
-                    static function () use (
-                        $funcaoController
-                    ): void {
-                        $funcaoController->salvar();
-                    }
-                );
-            }
-        );
-    },
-
-    '/funcoes/editar' => static function () use (
-        $funcaoController
-    ): void {
-        AuthMiddleware::executar(
-            static function () use (
-                $funcaoController
-            ): void {
-                PermissionMiddleware::executar(
-                    'estrutura.gerenciar',
-                    static function () use (
-                        $funcaoController
-                    ): void {
-                        $funcaoController->atualizar();
-                    }
-                );
-            }
-        );
-    },
-
-    '/funcoes/alterar-status' => static function () use (
-        $funcaoController
-    ): void {
-        AuthMiddleware::executar(
-            static function () use (
-                $funcaoController
-            ): void {
-                PermissionMiddleware::executar(
-                    'estrutura.gerenciar',
-                    static function () use (
-                        $funcaoController
-                    ): void {
-                        $funcaoController->alterarStatus();
-                    }
-                );
-            }
-        );
-    },
 
 ];
