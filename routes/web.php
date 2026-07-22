@@ -33,6 +33,9 @@ require_once BASE_PATH
     . '/app/repositories/JornadaTrabalhoRepository.php';
 
 require_once BASE_PATH
+    . '/app/repositories/ColaboradorRepository.php';
+
+require_once BASE_PATH
     . '/app/services/AutenticacaoService.php';
 
 require_once BASE_PATH
@@ -49,6 +52,9 @@ require_once BASE_PATH
 
 require_once BASE_PATH
     . '/app/services/JornadaTrabalhoService.php';
+
+require_once BASE_PATH
+    . '/app/services/ColaboradorService.php';
 
 require_once BASE_PATH
     . '/app/controllers/AuthController.php';
@@ -70,6 +76,9 @@ require_once BASE_PATH
 
 require_once BASE_PATH
     . '/app/controllers/JornadaTrabalhoController.php';
+
+require_once BASE_PATH
+    . '/app/controllers/ColaboradorController.php';
 
 /*
 |--------------------------------------------------------------------------
@@ -102,6 +111,9 @@ $tipoVinculoRepository =
 
 $jornadaTrabalhoRepository =
     new JornadaTrabalhoRepository($pdo);
+
+$colaboradorRepository =
+    new ColaboradorRepository($pdo);
 
 /*
 |--------------------------------------------------------------------------
@@ -136,6 +148,16 @@ $tipoVinculoService =
 
 $jornadaTrabalhoService =
     new JornadaTrabalhoService(
+        $jornadaTrabalhoRepository
+    );
+
+$colaboradorService =
+    new ColaboradorService(
+        $colaboradorRepository,
+        $setorRepository,
+        $cargoRepository,
+        $funcaoRepository,
+        $tipoVinculoRepository,
         $jornadaTrabalhoRepository
     );
 
@@ -176,6 +198,17 @@ $tipoVinculoController =
 $jornadaTrabalhoController =
     new JornadaTrabalhoController(
         $jornadaTrabalhoService
+    );
+
+$colaboradorController =
+    new ColaboradorController(
+        $colaboradorService,
+        $setorRepository,
+        $cargoRepository,
+        $funcaoRepository,
+        $tipoVinculoRepository,
+        $jornadaTrabalhoRepository,
+        $pdo
     );
 
 /*
@@ -533,6 +566,89 @@ return [
                             $jornadaTrabalhoController
                         ): void {
                             $jornadaTrabalhoController->editar();
+                        }
+                    );
+                }
+            );
+        },
+
+
+        /*
+        |------------------------------------------------------------------
+        | Colaboradores
+        |------------------------------------------------------------------
+        */
+
+        '/colaboradores' => static function () use (
+            $colaboradorController
+        ): void {
+            AuthMiddleware::executar(
+                static function () use (
+                    $colaboradorController
+                ): void {
+                    PermissionMiddleware::executar(
+                        'estrutura.visualizar',
+                        static function () use (
+                            $colaboradorController
+                        ): void {
+                            $colaboradorController->index();
+                        }
+                    );
+                }
+            );
+        },
+
+        '/colaboradores/criar' => static function () use (
+            $colaboradorController
+        ): void {
+            AuthMiddleware::executar(
+                static function () use (
+                    $colaboradorController
+                ): void {
+                    PermissionMiddleware::executar(
+                        'estrutura.gerenciar',
+                        static function () use (
+                            $colaboradorController
+                        ): void {
+                            $colaboradorController->criar();
+                        }
+                    );
+                }
+            );
+        },
+
+        '/colaboradores/visualizar' => static function () use (
+            $colaboradorController
+        ): void {
+            AuthMiddleware::executar(
+                static function () use (
+                    $colaboradorController
+                ): void {
+                    PermissionMiddleware::executar(
+                        'estrutura.visualizar',
+                        static function () use (
+                            $colaboradorController
+                        ): void {
+                            $colaboradorController->visualizar();
+                        }
+                    );
+                }
+            );
+        },
+
+        '/colaboradores/editar' => static function () use (
+            $colaboradorController
+        ): void {
+            AuthMiddleware::executar(
+                static function () use (
+                    $colaboradorController
+                ): void {
+                    PermissionMiddleware::executar(
+                        'estrutura.gerenciar',
+                        static function () use (
+                            $colaboradorController
+                        ): void {
+                            $colaboradorController->editar();
                         }
                     );
                 }
@@ -910,6 +1026,71 @@ return [
                 }
             );
         },
+
+
+        /*
+        |------------------------------------------------------------------
+        | Colaboradores
+        |------------------------------------------------------------------
+        */
+
+        '/colaboradores/criar' => static function () use (
+            $colaboradorController
+        ): void {
+            AuthMiddleware::executar(
+                static function () use (
+                    $colaboradorController
+                ): void {
+                    PermissionMiddleware::executar(
+                        'estrutura.gerenciar',
+                        static function () use (
+                            $colaboradorController
+                        ): void {
+                            $colaboradorController->salvar();
+                        }
+                    );
+                }
+            );
+        },
+
+        '/colaboradores/editar' => static function () use (
+            $colaboradorController
+        ): void {
+            AuthMiddleware::executar(
+                static function () use (
+                    $colaboradorController
+                ): void {
+                    PermissionMiddleware::executar(
+                        'estrutura.gerenciar',
+                        static function () use (
+                            $colaboradorController
+                        ): void {
+                            $colaboradorController->atualizar();
+                        }
+                    );
+                }
+            );
+        },
+
+        '/colaboradores/alterar-status' => static function () use (
+            $colaboradorController
+        ): void {
+            AuthMiddleware::executar(
+                static function () use (
+                    $colaboradorController
+                ): void {
+                    PermissionMiddleware::executar(
+                        'estrutura.gerenciar',
+                        static function () use (
+                            $colaboradorController
+                        ): void {
+                            $colaboradorController->alterarStatus();
+                        }
+                    );
+                }
+            );
+        },
+
 
     ],
 
