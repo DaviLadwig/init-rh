@@ -36,6 +36,12 @@ require_once BASE_PATH
     . '/app/repositories/ColaboradorRepository.php';
 
 require_once BASE_PATH
+    . '/app/repositories/DocumentoColaboradorRepository.php';
+
+require_once BASE_PATH
+    . '/app/repositories/TipoDocumentoRepository.php';
+
+require_once BASE_PATH
     . '/app/services/AutenticacaoService.php';
 
 require_once BASE_PATH
@@ -55,6 +61,9 @@ require_once BASE_PATH
 
 require_once BASE_PATH
     . '/app/services/ColaboradorService.php';
+
+require_once BASE_PATH
+    . '/app/services/DocumentoColaboradorService.php';
 
 require_once BASE_PATH
     . '/app/controllers/AuthController.php';
@@ -79,6 +88,9 @@ require_once BASE_PATH
 
 require_once BASE_PATH
     . '/app/controllers/ColaboradorController.php';
+
+require_once BASE_PATH
+    . '/app/controllers/DocumentoColaboradorController.php';
 
 /*
 |--------------------------------------------------------------------------
@@ -114,6 +126,12 @@ $jornadaTrabalhoRepository =
 
 $colaboradorRepository =
     new ColaboradorRepository($pdo);
+
+$documentoColaboradorRepository =
+    new DocumentoColaboradorRepository($pdo);
+
+$tipoDocumentoRepository =
+    new TipoDocumentoRepository($pdo);
 
 /*
 |--------------------------------------------------------------------------
@@ -159,6 +177,13 @@ $colaboradorService =
         $funcaoRepository,
         $tipoVinculoRepository,
         $jornadaTrabalhoRepository
+    );
+
+$documentoColaboradorService =
+    new DocumentoColaboradorService(
+        $documentoColaboradorRepository,
+        $tipoDocumentoRepository,
+        $colaboradorRepository
     );
 
 /*
@@ -209,6 +234,13 @@ $colaboradorController =
         $tipoVinculoRepository,
         $jornadaTrabalhoRepository,
         $pdo
+    );
+
+$documentoColaboradorController =
+    new DocumentoColaboradorController(
+        $documentoColaboradorService,
+        $tipoDocumentoRepository,
+        $colaboradorService
     );
 
 /*
@@ -656,6 +688,88 @@ return [
         },
 
         /*
+        |------------------------------------------------------------------
+        | Documentos dos colaboradores
+        |------------------------------------------------------------------
+        */
+
+        '/colaboradores/documentos' => static function () use (
+            $documentoColaboradorController
+        ): void {
+            AuthMiddleware::executar(
+                static function () use (
+                    $documentoColaboradorController
+                ): void {
+                    PermissionMiddleware::executar(
+                        'documentos.visualizar',
+                        static function () use (
+                            $documentoColaboradorController
+                        ): void {
+                            $documentoColaboradorController->index();
+                        }
+                    );
+                }
+            );
+        },
+
+        '/documentos/criar' => static function () use (
+            $documentoColaboradorController
+        ): void {
+            AuthMiddleware::executar(
+                static function () use (
+                    $documentoColaboradorController
+                ): void {
+                    PermissionMiddleware::executar(
+                        'documentos.gerenciar',
+                        static function () use (
+                            $documentoColaboradorController
+                        ): void {
+                            $documentoColaboradorController->criar();
+                        }
+                    );
+                }
+            );
+        },
+
+        '/documentos/editar' => static function () use (
+            $documentoColaboradorController
+        ): void {
+            AuthMiddleware::executar(
+                static function () use (
+                    $documentoColaboradorController
+                ): void {
+                    PermissionMiddleware::executar(
+                        'documentos.gerenciar',
+                        static function () use (
+                            $documentoColaboradorController
+                        ): void {
+                            $documentoColaboradorController->editar();
+                        }
+                    );
+                }
+            );
+        },
+
+        '/documentos/baixar' => static function () use (
+            $documentoColaboradorController
+        ): void {
+            AuthMiddleware::executar(
+                static function () use (
+                    $documentoColaboradorController
+                ): void {
+                    PermissionMiddleware::executar(
+                        'documentos.baixar',
+                        static function () use (
+                            $documentoColaboradorController
+                        ): void {
+                            $documentoColaboradorController->baixar();
+                        }
+                    );
+                }
+            );
+        },
+
+        /*
          * Diagnóstico temporário.
          */
         '/teste' => static function (): void {
@@ -1091,6 +1205,87 @@ return [
             );
         },
 
+        /*
+        |------------------------------------------------------------------
+        | Documentos dos colaboradores
+        |------------------------------------------------------------------
+        */
+
+        '/documentos/criar' => static function () use (
+            $documentoColaboradorController
+        ): void {
+            AuthMiddleware::executar(
+                static function () use (
+                    $documentoColaboradorController
+                ): void {
+                    PermissionMiddleware::executar(
+                        'documentos.gerenciar',
+                        static function () use (
+                            $documentoColaboradorController
+                        ): void {
+                            $documentoColaboradorController->salvar();
+                        }
+                    );
+                }
+            );
+        },
+
+        '/documentos/editar' => static function () use (
+            $documentoColaboradorController
+        ): void {
+            AuthMiddleware::executar(
+                static function () use (
+                    $documentoColaboradorController
+                ): void {
+                    PermissionMiddleware::executar(
+                        'documentos.gerenciar',
+                        static function () use (
+                            $documentoColaboradorController
+                        ): void {
+                            $documentoColaboradorController->atualizar();
+                        }
+                    );
+                }
+            );
+        },
+
+        '/documentos/alterar-status' => static function () use (
+            $documentoColaboradorController
+        ): void {
+            AuthMiddleware::executar(
+                static function () use (
+                    $documentoColaboradorController
+                ): void {
+                    PermissionMiddleware::executar(
+                        'documentos.gerenciar',
+                        static function () use (
+                            $documentoColaboradorController
+                        ): void {
+                            $documentoColaboradorController->alterarStatus();
+                        }
+                    );
+                }
+            );
+        },
+
+        '/documentos/excluir' => static function () use (
+            $documentoColaboradorController
+        ): void {
+            AuthMiddleware::executar(
+                static function () use (
+                    $documentoColaboradorController
+                ): void {
+                    PermissionMiddleware::executar(
+                        'documentos.excluir',
+                        static function () use (
+                            $documentoColaboradorController
+                        ): void {
+                            $documentoColaboradorController->excluir();
+                        }
+                    );
+                }
+            );
+        },
 
     ],
 
