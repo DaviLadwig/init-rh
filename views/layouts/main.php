@@ -53,10 +53,17 @@ $dashboardAtivo = str_ends_with(
     '/dashboard'
 );
 
-$colaboradoresAtivo = str_contains(
+$documentosAtivo = str_contains(
     $caminhoAtual,
-    '/colaboradores'
+    '/documentos'
 );
+
+$colaboradoresAtivo =
+    str_contains(
+        $caminhoAtual,
+        '/colaboradores'
+    )
+    || $documentosAtivo;
 
 $setoresAtivo = str_contains(
     $caminhoAtual,
@@ -148,6 +155,21 @@ $catalogosFuncionaisAtivo =
             href="<?= escapar(
                 appUrl(
                     'css/colaboradores.css'
+                )
+            ) ?>"
+        >
+
+    <?php endif; ?>
+
+    <!-- Estilos específicos de documentos -->
+
+    <?php if ($documentosAtivo): ?>
+
+        <link
+            rel="stylesheet"
+            href="<?= escapar(
+                appUrl(
+                    'css/documentos.css'
                 )
             ) ?>"
         >
@@ -639,6 +661,20 @@ $catalogosFuncionaisAtivo =
             src="<?= escapar(
                 appUrl(
                     'js/colaboradores.js'
+                )
+            ) ?>"
+        ></script>
+
+    <?php endif; ?>
+
+    <!-- JavaScript exclusivo de documentos -->
+
+    <?php if ($documentosAtivo): ?>
+
+        <script
+            src="<?= escapar(
+                appUrl(
+                    'js/documentos.js'
                 )
             ) ?>"
         ></script>

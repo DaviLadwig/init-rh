@@ -10,8 +10,7 @@ class DocumentoColaboradorService
         private DocumentoColaboradorRepository $documentoRepository,
         private TipoDocumentoRepository $tipoDocumentoRepository,
         private ColaboradorRepository $colaboradorRepository
-    ) {
-    }
+    ) {}
 
     /**
      * Lista os documentos de um colaborador pertencente
@@ -114,10 +113,10 @@ class DocumentoColaboradorService
         ) {
             $colaborador =
                 $this->colaboradorRepository
-                    ->buscarPorId(
-                        $colaboradorId,
-                        $organizacaoId
-                    );
+                ->buscarPorId(
+                    $colaboradorId,
+                    $organizacaoId
+                );
 
             if (!$colaborador) {
                 $erros['colaborador'] =
@@ -138,6 +137,26 @@ class DocumentoColaboradorService
             $tipoDocumento,
             $erros
         );
+
+        /*
+        * Quando a identificação complementar não for informada,
+        * utilizamos o nome do tipo como título interno.
+        *
+        * O banco continua recebendo um título válido, enquanto
+        * o formulário permanece mais simples para o usuário.
+        */
+
+        if (
+            $dados['titulo'] === ''
+            && $tipoDocumento
+        ) {
+            $dados['titulo'] = trim(
+                (string) (
+                    $tipoDocumento['nome']
+                    ?? 'Documento'
+                )
+            );
+        }
 
         $arquivo =
             $this->validarArquivoEnviado(
@@ -179,7 +198,7 @@ class DocumentoColaboradorService
                 'Não foi possível verificar a integridade do arquivo.',
                 [
                     'arquivo' =>
-                        'Não foi possível calcular a assinatura do arquivo.',
+                    'Não foi possível calcular a assinatura do arquivo.',
                 ],
                 $dados
             );
@@ -195,17 +214,17 @@ class DocumentoColaboradorService
          */
         if (
             $this->documentoRepository
-                ->existeHashNoColaborador(
-                    $organizacaoId,
-                    $colaboradorId,
-                    $hash
-                )
+            ->existeHashNoColaborador(
+                $organizacaoId,
+                $colaboradorId,
+                $hash
+            )
         ) {
             return $this->falha(
                 'Este arquivo já foi anexado ao colaborador.',
                 [
                     'arquivo' =>
-                        'Selecione um arquivo diferente.',
+                    'Selecione um arquivo diferente.',
                 ],
                 $dados
             );
@@ -216,6 +235,9 @@ class DocumentoColaboradorService
                 $this->gerarDestinoSeguro(
                     $organizacaoId,
                     $colaboradorId,
+                    $colaborador,
+                    $tipoDocumento,
+                    $dados['titulo'],
                     $arquivo['extensao']
                 );
         } catch (Throwable) {
@@ -223,7 +245,7 @@ class DocumentoColaboradorService
                 'O armazenamento privado de documentos não está disponível.',
                 [
                     'arquivo' =>
-                        'Não foi possível preparar o diretório privado.',
+                    'Não foi possível preparar o diretório privado.',
                 ],
                 $dados
             );
@@ -243,7 +265,7 @@ class DocumentoColaboradorService
                 'Não foi possível armazenar o arquivo enviado.',
                 [
                     'arquivo' =>
-                        'O upload não pôde ser concluído.',
+                    'O upload não pôde ser concluído.',
                 ],
                 $dados
             );
@@ -266,67 +288,55 @@ class DocumentoColaboradorService
                 $this->documentoRepository->criar(
                     [
                         'organizacao_id' =>
-                            $organizacaoId,
+                        $organizacaoId,
 
                         'colaborador_id' =>
-                            $colaboradorId,
+                        $colaboradorId,
 
                         'tipo_documento_id' =>
-                            $dados[
-                                'tipo_documento_id'
-                            ],
+                        $dados['tipo_documento_id'],
 
                         'enviado_por_usuario_id' =>
-                            $usuarioId !== null
+                        $usuarioId !== null
                             && $usuarioId > 0
-                                ? $usuarioId
-                                : null,
+                            ? $usuarioId
+                            : null,
 
                         'titulo' =>
-                            $dados['titulo'],
+                        $dados['titulo'],
 
                         'numero_documento' =>
-                            $dados[
-                                'numero_documento'
-                            ],
+                        $dados['numero_documento'],
 
                         'data_emissao' =>
-                            $dados['data_emissao'],
+                        $dados['data_emissao'],
 
                         'data_validade' =>
-                            $dados['data_validade'],
+                        $dados['data_validade'],
 
                         'descricao' =>
-                            $dados['descricao'],
+                        $dados['descricao'],
 
                         'arquivo_nome_original' =>
-                            $arquivo[
-                                'nome_original'
-                            ],
+                        $arquivo['nome_original'],
 
                         'arquivo_nome_armazenado' =>
-                            $destino[
-                                'nome_armazenado'
-                            ],
+                        $destino['nome_armazenado'],
 
                         'arquivo_caminho_relativo' =>
-                            $destino[
-                                'caminho_relativo'
-                            ],
+                        $destino['caminho_relativo'],
 
                         'arquivo_extensao' =>
-                            $arquivo['extensao'],
+                        $arquivo['extensao'],
 
                         'arquivo_mime' =>
-                            $arquivo['mime'],
+                        $arquivo['mime'],
 
                         'arquivo_tamanho_bytes' =>
-                            $arquivo[
-                                'tamanho_bytes'
-                            ],
+                        $arquivo['tamanho_bytes'],
 
                         'arquivo_hash_sha256' =>
-                            $hash,
+                        $hash,
 
                         'ativo' => true,
                     ]
@@ -339,15 +349,11 @@ class DocumentoColaboradorService
              */
             if (
                 is_file(
-                    $destino[
-                        'caminho_absoluto'
-                    ]
+                    $destino['caminho_absoluto']
                 )
             ) {
                 @unlink(
-                    $destino[
-                        'caminho_absoluto'
-                    ]
+                    $destino['caminho_absoluto']
                 );
             }
 
@@ -379,9 +385,9 @@ class DocumentoColaboradorService
         return [
             'sucesso' => true,
             'mensagem' =>
-                'Documento anexado com segurança.',
+            'Documento anexado com segurança.',
             'documento_id' =>
-                $documentoId,
+            $documentoId,
         ];
     }
 
@@ -407,10 +413,10 @@ class DocumentoColaboradorService
 
         $documentoAtual =
             $this->documentoRepository
-                ->buscarPorId(
-                    $documentoId,
-                    $organizacaoId
-                );
+            ->buscarPorId(
+                $documentoId,
+                $organizacaoId
+            );
 
         if (!$documentoAtual) {
             return $this->falha(
@@ -431,9 +437,7 @@ class DocumentoColaboradorService
                 $organizacaoId,
                 $dados['tipo_documento_id'],
                 (int) (
-                    $documentoAtual[
-                        'tipo_documento_id'
-                    ]
+                    $documentoAtual['tipo_documento_id']
                     ?? 0
                 ),
                 $erros
@@ -444,6 +448,26 @@ class DocumentoColaboradorService
             $tipoDocumento,
             $erros
         );
+
+        /*
+        * Quando a identificação complementar não for informada,
+        * utilizamos o nome do tipo como título interno.
+        *
+        * O banco continua recebendo um título válido, enquanto
+        * o formulário permanece mais simples para o usuário.
+        */
+
+        if (
+            $dados['titulo'] === ''
+            && $tipoDocumento
+        ) {
+            $dados['titulo'] = trim(
+                (string) (
+                    $tipoDocumento['nome']
+                    ?? 'Documento'
+                )
+            );
+        }
 
         if ($erros !== []) {
             return $this->falha(
@@ -456,11 +480,11 @@ class DocumentoColaboradorService
         try {
             $atualizado =
                 $this->documentoRepository
-                    ->atualizarMetadados(
-                        $documentoId,
-                        $organizacaoId,
-                        $dados
-                    );
+                ->atualizarMetadados(
+                    $documentoId,
+                    $organizacaoId,
+                    $dados
+                );
         } catch (PDOException $erro) {
             if ($erro->getCode() === '23503') {
                 return $this->falha(
@@ -499,10 +523,10 @@ class DocumentoColaboradorService
 
         $documento =
             $this->documentoRepository
-                ->buscarPorId(
-                    $documentoId,
-                    $organizacaoId
-                );
+            ->buscarPorId(
+                $documentoId,
+                $organizacaoId
+            );
 
         if (!$documento) {
             return $this->falha(
@@ -513,7 +537,7 @@ class DocumentoColaboradorService
         $novoStatus =
             !$this->valorBooleano(
                 $documento['ativo']
-                ?? false
+                    ?? false
             );
 
         /*
@@ -538,11 +562,11 @@ class DocumentoColaboradorService
 
         $alterado =
             $this->documentoRepository
-                ->alterarStatus(
-                    $documentoId,
-                    $organizacaoId,
-                    $novoStatus
-                );
+            ->alterarStatus(
+                $documentoId,
+                $organizacaoId,
+                $novoStatus
+            );
 
         if (!$alterado) {
             return $this->falha(
@@ -589,10 +613,10 @@ class DocumentoColaboradorService
 
         $documento =
             $this->documentoRepository
-                ->buscarPorId(
-                    $documentoId,
-                    $organizacaoId
-                );
+            ->buscarPorId(
+                $documentoId,
+                $organizacaoId
+            );
 
         if (!$documento) {
             return $this->falha(
@@ -603,7 +627,7 @@ class DocumentoColaboradorService
         if (
             !$this->valorBooleano(
                 $documento['ativo']
-                ?? false
+                    ?? false
             )
         ) {
             return $this->falha(
@@ -627,43 +651,26 @@ class DocumentoColaboradorService
             'sucesso' => true,
 
             'caminho_absoluto' =>
-                $arquivo[
-                    'caminho_absoluto'
-                ],
+            $arquivo['caminho_absoluto'],
 
             'nome_download' =>
-                $this->nomeDownloadSeguro(
-                    (string) (
-                        $documento[
-                            'arquivo_nome_original'
-                        ]
-                        ?? 'documento'
-                    ),
-                    (string) (
-                        $documento[
-                            'arquivo_extensao'
-                        ]
-                        ?? ''
-                    )
-                ),
+            $this->gerarNomeAmigavelDownload(
+                $documento
+            ),
 
             'mime' =>
-                (string) (
-                    $documento[
-                        'arquivo_mime'
-                    ]
-                    ?? 'application/octet-stream'
-                ),
+            (string) (
+                $documento['arquivo_mime']
+                ?? 'application/octet-stream'
+            ),
 
             'tamanho_bytes' =>
-                (int) filesize(
-                    $arquivo[
-                        'caminho_absoluto'
-                    ]
-                ),
+            (int) filesize(
+                $arquivo['caminho_absoluto']
+            ),
 
             'documento' =>
-                $documento,
+            $documento,
         ];
     }
 
@@ -689,10 +696,10 @@ class DocumentoColaboradorService
 
         $documento =
             $this->documentoRepository
-                ->buscarPorId(
-                    $documentoId,
-                    $organizacaoId
-                );
+            ->buscarPorId(
+                $documentoId,
+                $organizacaoId
+            );
 
         if (!$documento) {
             return $this->falha(
@@ -702,10 +709,10 @@ class DocumentoColaboradorService
 
         $excluido =
             $this->documentoRepository
-                ->marcarComoExcluido(
-                    $documentoId,
-                    $organizacaoId
-                );
+            ->marcarComoExcluido(
+                $documentoId,
+                $organizacaoId
+            );
 
         if (!$excluido) {
             return $this->falha(
@@ -716,7 +723,7 @@ class DocumentoColaboradorService
         return [
             'sucesso' => true,
             'mensagem' =>
-                'Documento removido da listagem com segurança.',
+            'Documento removido da listagem com segurança.',
         ];
     }
 
@@ -767,33 +774,33 @@ class DocumentoColaboradorService
 
         return [
             'tipo_documento_id' =>
-                (int) (
-                    $dados['tipo_documento_id']
-                    ?? 0
-                ),
+            (int) (
+                $dados['tipo_documento_id']
+                ?? 0
+            ),
 
             'titulo' =>
-                $titulo,
+            $titulo,
 
             'numero_documento' =>
-                $numeroDocumento !== ''
-                    ? $numeroDocumento
-                    : null,
+            $numeroDocumento !== ''
+                ? $numeroDocumento
+                : null,
 
             'data_emissao' =>
-                $dataEmissao !== ''
-                    ? $dataEmissao
-                    : null,
+            $dataEmissao !== ''
+                ? $dataEmissao
+                : null,
 
             'data_validade' =>
-                $dataValidade !== ''
-                    ? $dataValidade
-                    : null,
+            $dataValidade !== ''
+                ? $dataValidade
+                : null,
 
             'descricao' =>
-                $descricao !== ''
-                    ? $descricao
-                    : null,
+            $descricao !== ''
+                ? $descricao
+                : null,
         ];
     }
 
@@ -815,28 +822,24 @@ class DocumentoColaboradorService
 
         $titulo = (string) $dados['titulo'];
 
-        if ($titulo === '') {
-            $erros['titulo'] =
-                'Informe o título do documento.';
-        } elseif (
-            mb_strlen($titulo) < 2
+        if (
+            $titulo !== ''
+            && mb_strlen($titulo) < 2
         ) {
             $erros['titulo'] =
-                'O título deve possuir pelo menos 2 caracteres.';
+                'A identificação complementar deve possuir pelo menos 2 caracteres.';
         } elseif (
             mb_strlen($titulo) > 180
         ) {
             $erros['titulo'] =
-                'O título deve possuir no máximo 180 caracteres.';
+                'A identificação complementar deve possuir no máximo 180 caracteres.';
         }
 
         if (
             $dados['numero_documento']
             !== null
             && mb_strlen(
-                (string) $dados[
-                    'numero_documento'
-                ]
+                (string) $dados['numero_documento']
             ) > 100
         ) {
             $erros['numero_documento'] =
@@ -847,9 +850,7 @@ class DocumentoColaboradorService
             $dados['data_emissao']
             !== null
             && !$this->dataValida(
-                (string) $dados[
-                    'data_emissao'
-                ]
+                (string) $dados['data_emissao']
             )
         ) {
             $erros['data_emissao'] =
@@ -860,9 +861,7 @@ class DocumentoColaboradorService
             $dados['data_validade']
             !== null
             && !$this->dataValida(
-                (string) $dados[
-                    'data_validade'
-                ]
+                (string) $dados['data_validade']
             )
         ) {
             $erros['data_validade'] =
@@ -903,10 +902,10 @@ class DocumentoColaboradorService
 
         $tipoDocumento =
             $this->tipoDocumentoRepository
-                ->buscarPorId(
-                    $tipoDocumentoId,
-                    $organizacaoId
-                );
+            ->buscarPorId(
+                $tipoDocumentoId,
+                $organizacaoId
+            );
 
         if (!$tipoDocumento) {
             $erros['tipo_documento_id'] =
@@ -918,13 +917,13 @@ class DocumentoColaboradorService
         $ativo =
             $this->valorBooleano(
                 $tipoDocumento['ativo']
-                ?? false
+                    ?? false
             );
 
         if (
             !$ativo
             && $tipoDocumentoAtualId
-                !== $tipoDocumentoId
+            !== $tipoDocumentoId
         ) {
             $erros['tipo_documento_id'] =
                 'O tipo de documento selecionado está inativo.';
@@ -950,10 +949,8 @@ class DocumentoColaboradorService
         if (
             $tipoDocumento
             && $this->valorBooleano(
-                $tipoDocumento[
-                    'exige_validade'
-                ]
-                ?? false
+                $tipoDocumento['exige_validade']
+                    ?? false
             )
             && $dataValidade === null
         ) {
@@ -1116,9 +1113,7 @@ class DocumentoColaboradorService
         }
 
         $extensao =
-            (string) $tiposPermitidos[
-                $mimeReal
-            ];
+            (string) $tiposPermitidos[$mimeReal];
 
         if (
             !$this->conteudoCompativelComMime(
@@ -1141,7 +1136,7 @@ class DocumentoColaboradorService
                 (string) (
                     $arquivo['name']
                     ?? 'documento.'
-                        . $extensao
+                    . $extensao
                 )
             );
 
@@ -1156,19 +1151,19 @@ class DocumentoColaboradorService
 
         return [
             'caminho_temporario' =>
-                $caminhoTemporario,
+            $caminhoTemporario,
 
             'nome_original' =>
-                $nomeOriginal,
+            $nomeOriginal,
 
             'mime' =>
-                $mimeReal,
+            $mimeReal,
 
             'extensao' =>
-                $extensao,
+            $extensao,
 
             'tamanho_bytes' =>
-                (int) $tamanhoReal,
+            (int) $tamanhoReal,
         ];
     }
 
@@ -1229,24 +1224,132 @@ class DocumentoColaboradorService
     }
 
     /**
-     * Gera:
+     * Gera uma estrutura física organizada e segura:
      *
-     * organizacao_ID/colaborador_ID/nome-aleatorio.ext
+     * organizacao_ID/
+     * colaborador_ID_nome_do_colaborador/
+     * tipo_documento/
+     * nome_amigavel__identificador.ext
+     *
+     * Exemplo:
+     *
+     * organizacao_1/colaborador_15_joao_da_silva/registro_profissional/
+     * coren_ma_2026__a1b2c3d4e5f60708.pdf
+     *
+     * O nome amigável é sanitizado e recebe um sufixo
+     * aleatório para impedir colisões.
      */
     private function gerarDestinoSeguro(
         int $organizacaoId,
         int $colaboradorId,
+        array $colaborador,
+        array $tipoDocumento,
+        string $identificacao,
         string $extensao
     ): array {
         $base =
             caminhoStorageDocumentos();
 
-        $diretorioRelativo =
+        $extensao = mb_strtolower(
+            trim($extensao)
+        );
+
+        if (
+            !in_array(
+                $extensao,
+                extensoesDocumentosPermitidas(),
+                true
+            )
+        ) {
+            throw new RuntimeException(
+                'A extensão calculada para o arquivo não é permitida.'
+            );
+        }
+
+        $referenciaTipo = trim(
+            (string) (
+                $tipoDocumento['codigo']
+                ?? $tipoDocumento['nome']
+                ?? 'documento'
+            )
+        );
+
+        $pastaTipo =
+            $this->gerarNomeFisicoSeguro(
+                $referenciaTipo,
+                'documento',
+                60
+            );
+
+        $referenciaArquivo = trim(
+            $identificacao
+        );
+
+        if ($referenciaArquivo === '') {
+            $referenciaArquivo = trim(
+                (string) (
+                    $tipoDocumento['nome']
+                    ?? 'documento'
+                )
+            );
+        }
+
+        $nomeBase =
+            $this->gerarNomeFisicoSeguro(
+                $referenciaArquivo,
+                $pastaTipo,
+                100
+            );
+
+        $nomeColaborador = trim(
+            (string) (
+                $colaborador['nome_completo']
+                ?? $colaborador['nome']
+                ?? $colaborador['colaborador_nome']
+                ?? ''
+            )
+        );
+
+        $nomeColaboradorSeguro =
+            $this->gerarNomeFisicoSeguro(
+                $nomeColaborador,
+                'sem_nome',
+                80
+            );
+
+        $pastaColaboradorDesejada =
+            'colaborador_'
+            . $colaboradorId
+            . '_'
+            . $nomeColaboradorSeguro;
+
+        $pastaOrganizacao =
             'organizacao_'
-            . $organizacaoId
+            . $organizacaoId;
+
+        $diretorioOrganizacao =
+            $base
             . DIRECTORY_SEPARATOR
-            . 'colaborador_'
-            . $colaboradorId;
+            . $pastaOrganizacao;
+
+        /*
+         * Se o nome do colaborador for alterado posteriormente,
+         * reutilizamos a primeira pasta já criada com o mesmo ID.
+         * Isso evita espalhar os documentos em várias pastas.
+         */
+        $pastaColaborador =
+            $this->localizarPastaColaboradorExistente(
+                $diretorioOrganizacao,
+                $colaboradorId
+            )
+            ?? $pastaColaboradorDesejada;
+
+        $diretorioRelativo =
+            $pastaOrganizacao
+            . DIRECTORY_SEPARATOR
+            . $pastaColaborador
+            . DIRECTORY_SEPARATOR
+            . $pastaTipo;
 
         $diretorioAbsoluto =
             $base
@@ -1297,20 +1400,23 @@ class DocumentoColaboradorService
         }
 
         /*
-         * Tenta gerar um nome sem colisões.
-         *
-         * random_bytes(32) produz 64 caracteres
-         * hexadecimais após bin2hex().
+         * O sufixo aleatório mantém os arquivos únicos,
+         * mesmo quando dois documentos usam o mesmo nome.
          */
         for (
             $tentativa = 0;
             $tentativa < 10;
             $tentativa++
         ) {
-            $nomeArmazenado =
+            $identificador =
                 bin2hex(
-                    random_bytes(32)
-                )
+                    random_bytes(8)
+                );
+
+            $nomeArmazenado =
+                $nomeBase
+                . '__'
+                . $identificador
                 . '.'
                 . $extensao;
 
@@ -1320,9 +1426,8 @@ class DocumentoColaboradorService
                 . $nomeArmazenado;
 
             /*
-             * No banco, utilizamos barra normal para que
-             * o caminho continue portável entre Windows
-             * e Linux.
+             * No banco usamos barra normal para manter
+             * o caminho portável entre Windows e Linux.
              */
             $caminhoRelativoBanco =
                 str_replace(
@@ -1349,13 +1454,13 @@ class DocumentoColaboradorService
             ) {
                 return [
                     'nome_armazenado' =>
-                        $nomeArmazenado,
+                    $nomeArmazenado,
 
                     'caminho_relativo' =>
-                        $caminhoRelativoBanco,
+                    $caminhoRelativoBanco,
 
                     'caminho_absoluto' =>
-                        $caminhoAbsoluto,
+                    $caminhoAbsoluto,
                 ];
             }
         }
@@ -1363,6 +1468,170 @@ class DocumentoColaboradorService
         throw new RuntimeException(
             'Não foi possível gerar um nome seguro.'
         );
+    }
+
+    /**
+     * Localiza uma pasta já existente do colaborador pelo ID.
+     *
+     * Somente pastas no formato colaborador_ID_nome são
+     * consideradas. A pasta antiga colaborador_ID continua
+     * válida para os documentos já registrados no banco, mas
+     * não será reutilizada para novos uploads.
+     */
+    private function localizarPastaColaboradorExistente(
+        string $diretorioOrganizacao,
+        int $colaboradorId
+    ): ?string {
+        if (
+            $colaboradorId <= 0
+            || !is_dir($diretorioOrganizacao)
+        ) {
+            return null;
+        }
+
+        $prefixo =
+            'colaborador_'
+            . $colaboradorId
+            . '_';
+
+        $itens = scandir(
+            $diretorioOrganizacao
+        );
+
+        if (!is_array($itens)) {
+            return null;
+        }
+
+        foreach ($itens as $item) {
+            if (
+                $item === '.'
+                || $item === '..'
+                || !str_starts_with(
+                    $item,
+                    $prefixo
+                )
+            ) {
+                continue;
+            }
+
+            $caminho =
+                $diretorioOrganizacao
+                . DIRECTORY_SEPARATOR
+                . $item;
+
+            if (
+                is_dir($caminho)
+                && !is_link($caminho)
+            ) {
+                return $item;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Converte um texto informado pelo sistema em um nome
+     * físico seguro para pastas e arquivos privados.
+     *
+     * O resultado contém apenas letras minúsculas,
+     * números e sublinhados.
+     */
+    private function gerarNomeFisicoSeguro(
+        string $valor,
+        string $padrao = 'documento',
+        int $limite = 100
+    ): string {
+        $valor = trim($valor);
+
+        if (
+            function_exists('iconv')
+            && $valor !== ''
+        ) {
+            $convertido = iconv(
+                'UTF-8',
+                'ASCII//TRANSLIT//IGNORE',
+                $valor
+            );
+
+            if (is_string($convertido)) {
+                $valor = $convertido;
+            }
+        }
+
+        $valor = mb_strtolower(
+            $valor
+        );
+
+        $valor = preg_replace(
+            '/[^a-z0-9]+/',
+            '_',
+            $valor
+        ) ?? '';
+
+        $valor = trim(
+            $valor,
+            '_'
+        );
+
+        if ($valor === '') {
+            $valor = $padrao;
+        }
+
+        $valor = substr(
+            $valor,
+            0,
+            max(1, $limite)
+        );
+
+        $valor = rtrim(
+            $valor,
+            '_'
+        );
+
+        /*
+         * Evita nomes reservados pelo Windows.
+         */
+        $nomesReservados = [
+            'con',
+            'prn',
+            'aux',
+            'nul',
+            'com1',
+            'com2',
+            'com3',
+            'com4',
+            'com5',
+            'com6',
+            'com7',
+            'com8',
+            'com9',
+            'lpt1',
+            'lpt2',
+            'lpt3',
+            'lpt4',
+            'lpt5',
+            'lpt6',
+            'lpt7',
+            'lpt8',
+            'lpt9',
+        ];
+
+        if (
+            in_array(
+                $valor,
+                $nomesReservados,
+                true
+            )
+        ) {
+            $valor =
+                'arquivo_'
+                . $valor;
+        }
+
+        return $valor !== ''
+            ? $valor
+            : $padrao;
     }
 
     /**
@@ -1384,9 +1653,7 @@ class DocumentoColaboradorService
 
         $caminhoRelativo = trim(
             (string) (
-                $documento[
-                    'arquivo_caminho_relativo'
-                ]
+                $documento['arquivo_caminho_relativo']
                 ?? ''
             )
         );
@@ -1451,9 +1718,7 @@ class DocumentoColaboradorService
                 mb_strtolower(
                     trim(
                         (string) (
-                            $documento[
-                                'arquivo_hash_sha256'
-                            ]
+                            $documento['arquivo_hash_sha256']
                             ?? ''
                         )
                     )
@@ -1483,7 +1748,7 @@ class DocumentoColaboradorService
         return [
             'sucesso' => true,
             'caminho_absoluto' =>
-                $arquivoReal,
+            $arquivoReal,
         ];
     }
 
@@ -1569,52 +1834,187 @@ class DocumentoColaboradorService
     }
 
     /**
+     * Gera um nome amigável para o arquivo baixado.
+     *
+     * Exemplo:
+     *
+     * Registro profissional - COREN-MA - João Silva.pdf
+     *
+     * O arquivo físico continua utilizando o nome aleatório
+     * armazenado no servidor.
+     */
+    private function gerarNomeAmigavelDownload(
+        array $documento
+    ): string {
+        $tipoDocumento =
+            $this->normalizarParteNomeArquivo(
+                (string) (
+                    $documento['tipo_documento_nome']
+                    ?? 'Documento'
+                )
+            );
+
+        $identificacao =
+            $this->normalizarParteNomeArquivo(
+                (string) (
+                    $documento['titulo']
+                    ?? ''
+                )
+            );
+
+        $colaborador =
+            $this->normalizarParteNomeArquivo(
+                (string) (
+                    $documento['colaborador_nome']
+                    ?? ''
+                )
+            );
+
+        $partes = [];
+
+        if ($tipoDocumento !== '') {
+            $partes[] = $tipoDocumento;
+        }
+
+        /*
+     * Evita nomes repetidos como:
+     *
+     * RG - RG - João Silva.pdf
+     */
+        if (
+            $identificacao !== ''
+            && mb_strtolower($identificacao)
+            !== mb_strtolower(
+                $tipoDocumento
+            )
+        ) {
+            $partes[] = $identificacao;
+        }
+
+        if ($colaborador !== '') {
+            $partes[] = $colaborador;
+        }
+
+        $nomeBase = implode(
+            ' - ',
+            $partes
+        );
+
+        if ($nomeBase === '') {
+            $nomeBase = 'Documento';
+        }
+
+        return $this->nomeDownloadSeguro(
+            $nomeBase,
+            (string) (
+                $documento['arquivo_extensao']
+                ?? ''
+            )
+        );
+    }
+
+    /**
+     * Remove caracteres incompatíveis com nomes de arquivos
+     * no Windows e no Linux.
+     */
+    private function normalizarParteNomeArquivo(
+        string $valor
+    ): string {
+        $valor = trim($valor);
+
+        /*
+     * Remove caracteres de controle e caracteres
+     * proibidos em nomes de arquivos do Windows.
+     */
+        $valor = preg_replace(
+            '/[\x00-\x1F\x7F<>:"\/\\\\|?*]+/u',
+            ' ',
+            $valor
+        ) ?? '';
+
+        /*
+     * Substitui múltiplos espaços por um único espaço.
+     */
+        $valor = preg_replace(
+            '/\s+/u',
+            ' ',
+            $valor
+        ) ?? '';
+
+        $valor = trim(
+            $valor,
+            " .\t\n\r\0\x0B"
+        );
+
+        return mb_substr(
+            $valor,
+            0,
+            100
+        );
+    }
+
+    /**
      * Remove caracteres perigosos para o cabeçalho
      * Content-Disposition.
      */
+    /**
+     * Finaliza o nome seguro utilizado no download.
+     */
     private function nomeDownloadSeguro(
-        string $nomeOriginal,
+        string $nomeBase,
         string $extensao
     ): string {
-        $nome =
-            $this->normalizarNomeOriginal(
-                $nomeOriginal
+        $nomeBase =
+            $this->normalizarParteNomeArquivo(
+                $nomeBase
             );
 
-        $nome = str_replace(
-            [
-                '"',
-                "'",
-                "\r",
-                "\n",
-                ';',
-            ],
-            '',
-            $nome
-        );
+        if ($nomeBase === '') {
+            $nomeBase = 'Documento';
+        }
 
         $extensao = mb_strtolower(
             trim($extensao)
         );
 
-        if (
-            $extensao !== ''
-            && !str_ends_with(
-                mb_strtolower($nome),
-                '.' . $extensao
-            )
-        ) {
-            $nome .=
-                '.' . $extensao;
+        /*
+     * Permite apenas letras e números na extensão.
+     */
+        $extensao = preg_replace(
+            '/[^a-z0-9]/',
+            '',
+            $extensao
+        ) ?? '';
+
+        if ($extensao === '') {
+            return mb_substr(
+                $nomeBase,
+                0,
+                255
+            );
         }
 
-        return mb_substr(
-            $nome,
-            0,
+        /*
+     * Reserva espaço para o ponto e a extensão,
+     * garantindo que ela não seja cortada.
+     */
+        $limiteNome =
             255
+            - strlen($extensao)
+            - 1;
+
+        $nomeBase = mb_substr(
+            $nomeBase,
+            0,
+            max(1, $limiteNome)
         );
+
+        return $nomeBase
+            . '.'
+            . $extensao;
     }
 
+    
     /**
      * Traduz os códigos de erro de upload do PHP.
      */
@@ -1624,25 +2024,25 @@ class DocumentoColaboradorService
         return match ($codigo) {
             UPLOAD_ERR_INI_SIZE,
             UPLOAD_ERR_FORM_SIZE =>
-                'O arquivo ultrapassa o tamanho máximo permitido.',
+            'O arquivo ultrapassa o tamanho máximo permitido.',
 
             UPLOAD_ERR_PARTIAL =>
-                'O arquivo foi enviado apenas parcialmente.',
+            'O arquivo foi enviado apenas parcialmente.',
 
             UPLOAD_ERR_NO_FILE =>
-                'Selecione um arquivo para anexar.',
+            'Selecione um arquivo para anexar.',
 
             UPLOAD_ERR_NO_TMP_DIR =>
-                'O servidor está sem diretório temporário para uploads.',
+            'O servidor está sem diretório temporário para uploads.',
 
             UPLOAD_ERR_CANT_WRITE =>
-                'O servidor não conseguiu gravar o arquivo temporário.',
+            'O servidor não conseguiu gravar o arquivo temporário.',
 
             UPLOAD_ERR_EXTENSION =>
-                'Uma extensão do servidor bloqueou o upload.',
+            'Uma extensão do servidor bloqueou o upload.',
 
             default =>
-                'Ocorreu uma falha durante o envio do arquivo.',
+            'Ocorreu uma falha durante o envio do arquivo.',
         };
     }
 
@@ -1776,12 +2176,12 @@ movimentação por move_uploaded_file();
 tamanho obtido do arquivo real;
 MIME detectado por finfo;
 confirmação adicional da estrutura PDF, JPG ou PNG;
-nome físico aleatório com random_bytes(32);
+nome físico organizado com prefixo sanitizado e sufixo aleatório;
 prevenção de path traversal;
 conferência de que o caminho permanece dentro do storage;
 hash SHA-256 no cadastro e no download;
 remoção do arquivo caso o banco rejeite o registro;
-isolamento por organização e colaborador;
+isolamento por organização, colaborador e tipo de documento;
 bloqueio de arquivos duplicados;
 download somente de documentos ativos;
 exclusão lógica, preservando o arquivo para recuperação administrativa.
