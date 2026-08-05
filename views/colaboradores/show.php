@@ -8,18 +8,18 @@ declare(strict_types=1);
 
 $colaborador =
     isset($colaborador) && is_array($colaborador)
-        ? $colaborador
-        : [];
+    ? $colaborador
+    : [];
 
 $sucesso =
     isset($sucesso) && is_string($sucesso)
-        ? $sucesso
-        : null;
+    ? $sucesso
+    : null;
 
 $erro =
     isset($erro) && is_string($erro)
-        ? $erro
-        : null;
+    ? $erro
+    : null;
 
 /*
 |--------------------------------------------------------------------------
@@ -146,8 +146,8 @@ $obterIniciais = static function (
     $partes = array_values(
         array_filter(
             $partes,
-            static fn (string $parte): bool =>
-                $parte !== ''
+            static fn(string $parte): bool =>
+            $parte !== ''
         )
     );
 
@@ -227,12 +227,12 @@ $nomeCompleto = trim(
 
 $cpf = $formatarCpf(
     $colaborador['cpf']
-    ?? ''
+        ?? ''
 );
 
 $dataNascimento = $formatarData(
     $colaborador['data_nascimento']
-    ?? ''
+        ?? ''
 );
 
 $email = trim(
@@ -244,7 +244,7 @@ $email = trim(
 
 $telefone = $formatarTelefone(
     $colaborador['telefone']
-    ?? ''
+        ?? ''
 );
 
 $matricula = trim(
@@ -298,17 +298,17 @@ $jornadaNome = trim(
 
 $cargaHoraria = $formatarCargaHoraria(
     $colaborador['carga_horaria_semanal']
-    ?? null
+        ?? null
 );
 
 $dataAdmissao = $formatarData(
     $colaborador['data_admissao']
-    ?? ''
+        ?? ''
 );
 
 $dataFimVinculo = $formatarData(
     $colaborador['data_fim_vinculo']
-    ?? ''
+        ?? ''
 );
 
 $observacoes = trim(
@@ -320,23 +320,23 @@ $observacoes = trim(
 
 $criadoEm = $formatarDataHora(
     $colaborador['criado_em']
-    ?? ''
+        ?? ''
 );
 
 $atualizadoEm = $formatarDataHora(
     $colaborador['atualizado_em']
-    ?? ''
+        ?? ''
 );
 
 $ativo = filter_var(
     $colaborador['ativo']
-    ?? false,
+        ?? false,
     FILTER_VALIDATE_BOOL
 );
 
 $exigeDataFim = filter_var(
     $colaborador['exige_data_fim']
-    ?? false,
+        ?? false,
     FILTER_VALIDATE_BOOL
 );
 
@@ -349,8 +349,7 @@ $iniciais = $obterIniciais(
 
     <div
         class="alert alert--success"
-        role="status"
-    >
+        role="status">
         <?= escapar($sucesso) ?>
     </div>
 
@@ -360,8 +359,7 @@ $iniciais = $obterIniciais(
 
     <div
         class="alert alert--error"
-        role="alert"
-    >
+        role="alert">
         <?= escapar($erro) ?>
     </div>
 
@@ -373,14 +371,12 @@ $iniciais = $obterIniciais(
 
         <a
             href="<?= escapar(
-                appUrl('colaboradores')
-            ) ?>"
-            class="employees-back-link"
-        >
+                        appUrl('colaboradores')
+                    ) ?>"
+            class="employees-back-link">
             <svg
                 viewBox="0 0 24 24"
-                aria-hidden="true"
-            >
+                aria-hidden="true">
                 <path d="m15 18-6-6 6-6"></path>
             </svg>
 
@@ -405,6 +401,39 @@ $iniciais = $obterIniciais(
     <div class="employees-page-header__actions">
 
         <?php if (
+            $colaboradorId > 0
+            && temPermissao(
+                'documentos.visualizar'
+            )
+        ): ?>
+
+            <a
+                href="<?= escapar(
+                            appUrl(
+                                'colaboradores/documentos?colaborador_id='
+                                    . $colaboradorId
+                            )
+                        ) ?>"
+                class="employees-primary-button">
+                <svg
+                    viewBox="0 0 24 24"
+                    aria-hidden="true">
+                    <path
+                        d="M4 5a2 2 0 0 1 2-2h4l2 2h6
+                        a2 2 0 0 1 2 2v12
+                        a2 2 0 0 1-2 2H6
+                        a2 2 0 0 1-2-2z"></path>
+
+                    <path d="M9 12h6"></path>
+                    <path d="M12 9v6"></path>
+                </svg>
+
+                <span>Documentos</span>
+            </a>
+
+        <?php endif; ?>
+
+        <?php if (
             temPermissao(
                 'estrutura.gerenciar'
             )
@@ -412,23 +441,20 @@ $iniciais = $obterIniciais(
 
             <a
                 href="<?= escapar(
-                    appUrl(
-                        'colaboradores/editar?id='
-                        . $colaboradorId
-                    )
-                ) ?>"
-                class="employees-secondary-button"
-            >
+                            appUrl(
+                                'colaboradores/editar?id='
+                                    . $colaboradorId
+                            )
+                        ) ?>"
+                class="employees-secondary-button">
                 <svg
                     viewBox="0 0 24 24"
-                    aria-hidden="true"
-                >
+                    aria-hidden="true">
                     <path d="M12 20h9"></path>
 
                     <path
                         d="M16.5 3.5a2.12 2.12
-                        0 0 1 3 3L8 18l-4 1 1-4z"
-                    ></path>
+                        0 0 1 3 3L8 18l-4 1 1-4z"></path>
                 </svg>
 
                 <span>Editar colaborador</span>
@@ -464,9 +490,8 @@ $iniciais = $obterIniciais(
 
                     <span
                         class="employees-status <?= $ativo
-                            ? 'employees-status--active'
-                            : 'employees-status--inactive' ?>"
-                    >
+                                                    ? 'employees-status--active'
+                                                    : 'employees-status--inactive' ?>">
                         <span></span>
 
                         <?= $ativo
@@ -524,44 +549,39 @@ $iniciais = $obterIniciais(
             <form
                 method="POST"
                 action="<?= escapar(
-                    appUrl(
-                        'colaboradores/alterar-status'
-                    )
-                ) ?>"
+                            appUrl(
+                                'colaboradores/alterar-status'
+                            )
+                        ) ?>"
                 class="employee-profile__status-form"
                 data-employee-status-form
                 data-employee-name="<?= escapar(
-                    $nomeCompleto
-                ) ?>"
+                                        $nomeCompleto
+                                    ) ?>"
                 data-employee-active="<?= $ativo
-                    ? 'true'
-                    : 'false' ?>"
-            >
+                                            ? 'true'
+                                            : 'false' ?>">
                 <?= campoCsrf() ?>
 
                 <input
                     type="hidden"
                     name="colaborador_id"
-                    value="<?= $colaboradorId ?>"
-                >
+                    value="<?= $colaboradorId ?>">
 
                 <button
                     type="submit"
                     class="employees-status-button <?= $ativo
-                        ? 'employees-status-button--deactivate'
-                        : 'employees-status-button--activate' ?>"
-                >
+                                                        ? 'employees-status-button--deactivate'
+                                                        : 'employees-status-button--activate' ?>">
                     <?php if ($ativo): ?>
 
                         <svg
                             viewBox="0 0 24 24"
-                            aria-hidden="true"
-                        >
+                            aria-hidden="true">
                             <circle
                                 cx="12"
                                 cy="12"
-                                r="9"
-                            ></circle>
+                                r="9"></circle>
 
                             <path d="M8 12h8"></path>
                         </svg>
@@ -574,13 +594,11 @@ $iniciais = $obterIniciais(
 
                         <svg
                             viewBox="0 0 24 24"
-                            aria-hidden="true"
-                        >
+                            aria-hidden="true">
                             <circle
                                 cx="12"
                                 cy="12"
-                                r="9"
-                            ></circle>
+                                r="9"></circle>
 
                             <path d="m8 12 3 3 5-6"></path>
                         </svg>
@@ -616,17 +634,14 @@ $iniciais = $obterIniciais(
 
                         <svg
                             viewBox="0 0 24 24"
-                            aria-hidden="true"
-                        >
+                            aria-hidden="true">
                             <circle
                                 cx="12"
                                 cy="8"
-                                r="4"
-                            ></circle>
+                                r="4"></circle>
 
                             <path
-                                d="M4 21a8 8 0 0 1 16 0"
-                            ></path>
+                                d="M4 21a8 8 0 0 1 16 0"></path>
                         </svg>
 
                     </span>
@@ -683,17 +698,15 @@ $iniciais = $obterIniciais(
                             class="
                                 employee-information-item
                                 employee-information-item--wide
-                            "
-                        >
+                            ">
                             <span>E-mail</span>
 
                             <?php if ($email !== ''): ?>
 
                                 <a
                                     href="mailto:<?= escapar(
-                                        $email
-                                    ) ?>"
-                                >
+                                                        $email
+                                                    ) ?>">
                                     <?= escapar($email) ?>
                                 </a>
 
@@ -722,15 +735,13 @@ $iniciais = $obterIniciais(
 
                         <svg
                             viewBox="0 0 24 24"
-                            aria-hidden="true"
-                        >
+                            aria-hidden="true">
                             <rect
                                 x="3"
                                 y="7"
                                 width="18"
                                 height="13"
-                                rx="2"
-                            ></rect>
+                                rx="2"></rect>
 
                             <path d="M8 7V5a4 4 0 0 1 8 0v2"></path>
 
@@ -797,8 +808,7 @@ $iniciais = $obterIniciais(
                             class="
                                 employee-information-item
                                 employee-information-item--wide
-                            "
-                        >
+                            ">
                             <span>Função adicional</span>
 
                             <strong>
@@ -824,13 +834,11 @@ $iniciais = $obterIniciais(
 
                         <svg
                             viewBox="0 0 24 24"
-                            aria-hidden="true"
-                        >
+                            aria-hidden="true">
                             <circle
                                 cx="12"
                                 cy="12"
-                                r="9"
-                            ></circle>
+                                r="9"></circle>
 
                             <path d="M12 7v5l3 2"></path>
                         </svg>
@@ -925,13 +933,11 @@ $iniciais = $obterIniciais(
 
                         <svg
                             viewBox="0 0 24 24"
-                            aria-hidden="true"
-                        >
+                            aria-hidden="true">
                             <path
                                 d="M21 15a4 4 0 0 1-4 4H8l-5 3V7
                                 a4 4 0 0 1 4-4h10
-                                a4 4 0 0 1 4 4z"
-                            ></path>
+                                a4 4 0 0 1 4 4z"></path>
                         </svg>
 
                     </span>
@@ -978,9 +984,8 @@ $iniciais = $obterIniciais(
                         <span>Situação</span>
 
                         <strong class="<?= $ativo
-                            ? 'is-active'
-                            : 'is-inactive' ?>"
-                        >
+                                            ? 'is-active'
+                                            : 'is-inactive' ?>">
                             <?= $ativo
                                 ? 'Ativo'
                                 : 'Inativo' ?>

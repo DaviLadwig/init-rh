@@ -53,17 +53,75 @@ $dashboardAtivo = str_ends_with(
     '/dashboard'
 );
 
-$documentosAtivo = str_contains(
+$caminhoAtualNormalizado = rtrim(
     $caminhoAtual,
+    '/'
+);
+
+$documentosAtivo = str_contains(
+    $caminhoAtualNormalizado,
     '/documentos'
 );
 
+$documentosCentralAtivo =
+    str_ends_with(
+        $caminhoAtualNormalizado,
+        '/documentos'
+    )
+    && !str_contains(
+        $caminhoAtualNormalizado,
+        '/colaboradores/documentos'
+    );
+
 $colaboradoresAtivo =
     str_contains(
-        $caminhoAtual,
+        $caminhoAtualNormalizado,
         '/colaboradores'
     )
-    || $documentosAtivo;
+    && !$documentosAtivo;
+
+/*
+|--------------------------------------------------------------------------
+| Versão dos arquivos estáticos
+|--------------------------------------------------------------------------
+|
+| O filemtime adiciona uma versão à URL e evita que o navegador mantenha
+| uma cópia antiga do CSS ou JavaScript depois de uma atualização.
+|
+*/
+
+$caminhoCssDocumentos =
+    BASE_PATH . '/public/css/documentos.css';
+
+$caminhoCssDocumentosCentral =
+    BASE_PATH . '/public/css/documentos-central.css';
+
+$caminhoJsDocumentos =
+    BASE_PATH . '/public/js/documentos.js';
+
+$versaoCssDocumentos = is_file(
+    $caminhoCssDocumentos
+)
+    ? (string) filemtime(
+        $caminhoCssDocumentos
+    )
+    : '1';
+
+$versaoCssDocumentosCentral = is_file(
+    $caminhoCssDocumentosCentral
+)
+    ? (string) filemtime(
+        $caminhoCssDocumentosCentral
+    )
+    : '1';
+
+$versaoJsDocumentos = is_file(
+    $caminhoJsDocumentos
+)
+    ? (string) filemtime(
+        $caminhoJsDocumentos
+    )
+    : '1';
 
 $setoresAtivo = str_contains(
     $caminhoAtual,
@@ -115,8 +173,7 @@ $catalogosFuncionaisAtivo =
 
     <meta
         name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+        content="width=device-width, initial-scale=1.0">
 
     <title>
         <?= escapar($tituloPagina) ?>
@@ -128,23 +185,20 @@ $catalogosFuncionaisAtivo =
     <link
         rel="stylesheet"
         href="<?= escapar(
-            appUrl('css/app.css')
-        ) ?>"
-    >
+                    appUrl('css/app.css')
+                ) ?>">
 
     <link
         rel="stylesheet"
         href="<?= escapar(
-            appUrl('css/layout.css')
-        ) ?>"
-    >
+                    appUrl('css/layout.css')
+                ) ?>">
 
     <link
         rel="stylesheet"
         href="<?= escapar(
-            appUrl('css/dashboard.css')
-        ) ?>"
-    >
+                    appUrl('css/dashboard.css')
+                ) ?>">
 
     <!-- Estilos específicos de colaboradores -->
 
@@ -153,11 +207,10 @@ $catalogosFuncionaisAtivo =
         <link
             rel="stylesheet"
             href="<?= escapar(
-                appUrl(
-                    'css/colaboradores.css'
-                )
-            ) ?>"
-        >
+                        appUrl(
+                            'css/colaboradores.css'
+                        )
+                    ) ?>">
 
     <?php endif; ?>
 
@@ -168,11 +221,24 @@ $catalogosFuncionaisAtivo =
         <link
             rel="stylesheet"
             href="<?= escapar(
-                appUrl(
-                    'css/documentos.css'
-                )
-            ) ?>"
-        >
+                        appUrl(
+                            'css/documentos.css?v='
+                                . $versaoCssDocumentos
+                        )
+                    ) ?>">
+
+    <?php endif; ?>
+
+    <?php if ($documentosCentralAtivo): ?>
+
+        <link
+            rel="stylesheet"
+            href="<?= escapar(
+                        appUrl(
+                            'css/documentos-central.css?v='
+                                . $versaoCssDocumentosCentral
+                        )
+                    ) ?>">
 
     <?php endif; ?>
 
@@ -183,9 +249,8 @@ $catalogosFuncionaisAtivo =
         <link
             rel="stylesheet"
             href="<?= escapar(
-                appUrl('css/setores.css')
-            ) ?>"
-        >
+                        appUrl('css/setores.css')
+                    ) ?>">
 
     <?php endif; ?>
 
@@ -202,11 +267,10 @@ $catalogosFuncionaisAtivo =
         <link
             rel="stylesheet"
             href="<?= escapar(
-                appUrl(
-                    'css/cargos-funcoes.css'
-                )
-            ) ?>"
-        >
+                        appUrl(
+                            'css/cargos-funcoes.css'
+                        )
+                    ) ?>">
 
     <?php endif; ?>
 
@@ -219,8 +283,7 @@ $catalogosFuncionaisAtivo =
     <div
         class="sidebar-overlay"
         id="sidebarOverlay"
-        aria-hidden="true"
-    ></div>
+        aria-hidden="true"></div>
 
     <!-- =====================================================
          MENU LATERAL
@@ -228,19 +291,17 @@ $catalogosFuncionaisAtivo =
 
     <aside
         class="app-sidebar"
-        id="appSidebar"
-    >
+        id="appSidebar">
 
         <div class="sidebar-brand">
 
             <a
                 href="<?= escapar(
-                    appUrl('dashboard')
-                ) ?>"
+                            appUrl('dashboard')
+                        ) ?>"
                 class="sidebar-link<?= $dashboardAtivo
-                    ? ' sidebar-link--active'
-                    : '' ?>"
-            >
+                                        ? ' sidebar-link--active'
+                                        : '' ?>">
                 <span class="sidebar-brand__mark">
                     RH
                 </span>
@@ -256,8 +317,7 @@ $catalogosFuncionaisAtivo =
                 type="button"
                 class="sidebar-close"
                 id="sidebarClose"
-                aria-label="Fechar menu"
-            >
+                aria-label="Fechar menu">
                 ×
             </button>
 
@@ -265,8 +325,7 @@ $catalogosFuncionaisAtivo =
 
         <nav
             class="sidebar-navigation"
-            aria-label="Menu principal"
-        >
+            aria-label="Menu principal">
 
             <!-- Principal -->
 
@@ -276,16 +335,14 @@ $catalogosFuncionaisAtivo =
 
             <a
                 href="<?= escapar(
-                    appUrl('dashboard')
-                ) ?>"
+                            appUrl('dashboard')
+                        ) ?>"
                 class="sidebar-link<?= $dashboardAtivo
-                    ? ' sidebar-link--active'
-                    : '' ?>"
-            >
+                                        ? ' sidebar-link--active'
+                                        : '' ?>">
                 <span
                     class="sidebar-link__icon"
-                    aria-hidden="true"
-                >
+                    aria-hidden="true">
                     ▦
                 </span>
 
@@ -300,16 +357,14 @@ $catalogosFuncionaisAtivo =
 
             <a
                 href="<?= escapar(
-                    appUrl('colaboradores')
-                ) ?>"
+                            appUrl('colaboradores')
+                        ) ?>"
                 class="sidebar-link<?= $colaboradoresAtivo
-                    ? ' sidebar-link--active'
-                    : '' ?>"
-            >
+                                        ? ' sidebar-link--active'
+                                        : '' ?>">
                 <span
                     class="sidebar-link__icon"
-                    aria-hidden="true"
-                >
+                    aria-hidden="true">
                     ♙
                 </span>
 
@@ -325,8 +380,7 @@ $catalogosFuncionaisAtivo =
             <span class="sidebar-link sidebar-link--disabled">
                 <span
                     class="sidebar-link__icon"
-                    aria-hidden="true"
-                >
+                    aria-hidden="true">
                     ◫
                 </span>
 
@@ -335,16 +389,14 @@ $catalogosFuncionaisAtivo =
 
             <a
                 href="<?= escapar(
-                    appUrl('setores')
-                ) ?>"
+                            appUrl('setores')
+                        ) ?>"
                 class="sidebar-link<?= $setoresAtivo
-                    ? ' sidebar-link--active'
-                    : '' ?>"
-            >
+                                        ? ' sidebar-link--active'
+                                        : '' ?>">
                 <span
                     class="sidebar-link__icon"
-                    aria-hidden="true"
-                >
+                    aria-hidden="true">
                     ▦
                 </span>
 
@@ -353,16 +405,14 @@ $catalogosFuncionaisAtivo =
 
             <a
                 href="<?= escapar(
-                    appUrl('cargos')
-                ) ?>"
+                            appUrl('cargos')
+                        ) ?>"
                 class="sidebar-link<?= $cargosAtivo
-                    ? ' sidebar-link--active'
-                    : '' ?>"
-            >
+                                        ? ' sidebar-link--active'
+                                        : '' ?>">
                 <span
                     class="sidebar-link__icon"
-                    aria-hidden="true"
-                >
+                    aria-hidden="true">
                     ◇
                 </span>
 
@@ -371,16 +421,14 @@ $catalogosFuncionaisAtivo =
 
             <a
                 href="<?= escapar(
-                    appUrl('funcoes')
-                ) ?>"
+                            appUrl('funcoes')
+                        ) ?>"
                 class="sidebar-link<?= $funcoesAtivo
-                    ? ' sidebar-link--active'
-                    : '' ?>"
-            >
+                                        ? ' sidebar-link--active'
+                                        : '' ?>">
                 <span
                     class="sidebar-link__icon"
-                    aria-hidden="true"
-                >
+                    aria-hidden="true">
                     ⊙
                 </span>
 
@@ -389,16 +437,14 @@ $catalogosFuncionaisAtivo =
 
             <a
                 href="<?= escapar(
-                    appUrl('tipos-vinculo')
-                ) ?>"
+                            appUrl('tipos-vinculo')
+                        ) ?>"
                 class="sidebar-link<?= $tiposVinculoAtivo
-                    ? ' sidebar-link--active'
-                    : '' ?>"
-            >
+                                        ? ' sidebar-link--active'
+                                        : '' ?>">
                 <span
                     class="sidebar-link__icon"
-                    aria-hidden="true"
-                >
+                    aria-hidden="true">
                     ⛓
                 </span>
 
@@ -407,16 +453,14 @@ $catalogosFuncionaisAtivo =
 
             <a
                 href="<?= escapar(
-                    appUrl('jornadas')
-                ) ?>"
+                            appUrl('jornadas')
+                        ) ?>"
                 class="sidebar-link<?= $jornadasAtivo
-                    ? ' sidebar-link--active'
-                    : '' ?>"
-            >
+                                        ? ' sidebar-link--active'
+                                        : '' ?>">
                 <span
                     class="sidebar-link__icon"
-                    aria-hidden="true"
-                >
+                    aria-hidden="true">
                     ◷
                 </span>
 
@@ -432,8 +476,7 @@ $catalogosFuncionaisAtivo =
             <span class="sidebar-link sidebar-link--disabled">
                 <span
                     class="sidebar-link__icon"
-                    aria-hidden="true"
-                >
+                    aria-hidden="true">
                     ◷
                 </span>
 
@@ -443,8 +486,7 @@ $catalogosFuncionaisAtivo =
             <span class="sidebar-link sidebar-link--disabled">
                 <span
                     class="sidebar-link__icon"
-                    aria-hidden="true"
-                >
+                    aria-hidden="true">
                     ☼
                 </span>
 
@@ -454,24 +496,36 @@ $catalogosFuncionaisAtivo =
             <span class="sidebar-link sidebar-link--disabled">
                 <span
                     class="sidebar-link__icon"
-                    aria-hidden="true"
-                >
+                    aria-hidden="true">
                     ▤
                 </span>
 
                 <span>Escalas</span>
             </span>
 
-            <span class="sidebar-link sidebar-link--disabled">
-                <span
-                    class="sidebar-link__icon"
-                    aria-hidden="true"
-                >
-                    ▱
-                </span>
+            <?php if (
+                temPermissao(
+                    'documentos.visualizar'
+                )
+            ): ?>
 
-                <span>Documentos</span>
-            </span>
+                <a
+                    href="<?= escapar(
+                                appUrl('documentos')
+                            ) ?>"
+                    class="sidebar-link<?= $documentosAtivo
+                                            ? ' sidebar-link--active'
+                                            : '' ?>">
+                    <span
+                        class="sidebar-link__icon"
+                        aria-hidden="true">
+                        ▱
+                    </span>
+
+                    <span>Documentos</span>
+                </a>
+
+            <?php endif; ?>
 
             <!-- Gestão -->
 
@@ -482,8 +536,7 @@ $catalogosFuncionaisAtivo =
             <span class="sidebar-link sidebar-link--disabled">
                 <span
                     class="sidebar-link__icon"
-                    aria-hidden="true"
-                >
+                    aria-hidden="true">
                     ✓
                 </span>
 
@@ -493,8 +546,7 @@ $catalogosFuncionaisAtivo =
             <span class="sidebar-link sidebar-link--disabled">
                 <span
                     class="sidebar-link__icon"
-                    aria-hidden="true"
-                >
+                    aria-hidden="true">
                     ◉
                 </span>
 
@@ -504,8 +556,7 @@ $catalogosFuncionaisAtivo =
             <span class="sidebar-link sidebar-link--disabled">
                 <span
                     class="sidebar-link__icon"
-                    aria-hidden="true"
-                >
+                    aria-hidden="true">
                     ▥
                 </span>
 
@@ -528,9 +579,7 @@ $catalogosFuncionaisAtivo =
                     <strong>
                         <?= escapar(
                             (string) (
-                                $usuario[
-                                    'organizacao_nome'
-                                ]
+                                $usuario['organizacao_nome']
                                 ?? ''
                             )
                         ) ?>
@@ -561,8 +610,7 @@ $catalogosFuncionaisAtivo =
                     id="menuToggle"
                     aria-label="Abrir menu"
                     aria-controls="appSidebar"
-                    aria-expanded="false"
-                >
+                    aria-expanded="false">
                     ☰
                 </button>
 
@@ -597,9 +645,7 @@ $catalogosFuncionaisAtivo =
                         <small>
                             <?= escapar(
                                 (string) (
-                                    $usuario[
-                                        'perfil_nome'
-                                    ]
+                                    $usuario['perfil_nome']
                                     ?? ''
                                 )
                             ) ?>
@@ -612,15 +658,13 @@ $catalogosFuncionaisAtivo =
                 <form
                     method="POST"
                     action="<?= escapar(
-                        appUrl('logout')
-                    ) ?>"
-                >
+                                appUrl('logout')
+                            ) ?>">
                     <?= campoCsrf() ?>
 
                     <button
                         type="submit"
-                        class="header-logout"
-                    >
+                        class="header-logout">
                         Sair
                     </button>
                 </form>
@@ -643,15 +687,13 @@ $catalogosFuncionaisAtivo =
 
     <script
         src="<?= escapar(
-            appUrl('js/layout.js')
-        ) ?>"
-    ></script>
+                    appUrl('js/layout.js')
+                ) ?>"></script>
 
     <script
         src="<?= escapar(
-            appUrl('js/setores.js')
-        ) ?>"
-    ></script>
+                    appUrl('js/setores.js')
+                ) ?>"></script>
 
     <!-- JavaScript exclusivo de colaboradores -->
 
@@ -659,11 +701,10 @@ $catalogosFuncionaisAtivo =
 
         <script
             src="<?= escapar(
-                appUrl(
-                    'js/colaboradores.js'
-                )
-            ) ?>"
-        ></script>
+                        appUrl(
+                            'js/colaboradores.js'
+                        )
+                    ) ?>"></script>
 
     <?php endif; ?>
 
@@ -673,11 +714,11 @@ $catalogosFuncionaisAtivo =
 
         <script
             src="<?= escapar(
-                appUrl(
-                    'js/documentos.js'
-                )
-            ) ?>"
-        ></script>
+                        appUrl(
+                            'js/documentos.js?v='
+                                . $versaoJsDocumentos
+                        )
+                    ) ?>"></script>
 
     <?php endif; ?>
 
@@ -687,11 +728,10 @@ $catalogosFuncionaisAtivo =
 
         <script
             src="<?= escapar(
-                appUrl(
-                    'js/cargos-funcoes.js'
-                )
-            ) ?>"
-        ></script>
+                        appUrl(
+                            'js/cargos-funcoes.js'
+                        )
+                    ) ?>"></script>
 
     <?php endif; ?>
 

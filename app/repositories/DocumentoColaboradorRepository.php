@@ -9,6 +9,399 @@ class DocumentoColaboradorRepository
     ) {
     }
 
+
+    /**
+     * Lista documentos de todos os colaboradores da organização.
+     *
+     * A consulta é paginada e nunca retorna documentos de
+     * outra organização.
+     */
+    public function listarGeral(
+        int $organizacaoId,
+        string $busca = '',
+        string $situacao = 'TODOS',
+        string $validade = 'TODOS',
+        int $tipoDocumentoId = 0,
+        int $limite = 25,
+        int $offset = 0,
+        int $diasParaVencer = 30
+    ): array {
+        $filtros = $this->montarFiltrosGerais(
+            $organizacaoId,
+            $busca,
+            $situacao,
+            $validade,
+            $tipoDocumentoId,
+            $diasParaVencer
+        );
+
+        $limite = max(
+            1,
+            min($limite, 100)
+        );
+
+        $offset = max(
+            0,
+            $offset
+        );
+
+        $sql = '
+            SELECT
+                documento.id,
+                documento.organizacao_id,
+                documento.colaborador_id,
+                documento.tipo_documento_id,
+                documento.enviado_por_usuario_id,
+
+                documento.titulo,
+                documento.numero_documento,
+                documento.data_emissao,
+                documento.data_validade,
+                documento.descricao,
+
+                documento.arquivo_nome_original,
+                documento.arquivo_nome_armazenado,
+                documento.arquivo_caminho_relativo,
+                documento.arquivo_extensao,
+                documento.arquivo_mime,
+                documento.arquivo_tamanho_bytes,
+                documento.arquivo_hash_sha256,
+
+                documento.ativo,
+                documento.criado_em,
+                documento.atualizado_em,
+
+                colaborador.nome_completo
+                    AS colaborador_nome,
+
+                colaborador.matricula
+                    AS colaborador_matricula,
+
+                colaborador.ativo
+                    AS colaborador_ativo,
+
+                tipo_documento.nome
+                    AS tipo_documento_nome,
+
+                tipo_documento.codigo
+                    AS tipo_documento_codigo,
+
+                tipo_documento.exige_validade,
+
+                usuario.nome
+                    AS enviado_por_nome,
+
+                CASE
+                    WHEN documento.data_validade IS NULL
+                        THEN \'SEM_VALIDADE\'
+
+                    WHEN documento.data_validade < CURRENT_DATE
+                        THEN \'VENCIDO\'
+
+                    WHEN documento.data_validade <=
+                        CURRENT_DATE
+                        + (
+                            CAST(
+                                :dias_para_vencer_select
+                                AS INTEGER
+                            )
+                            * INTERVAL \'1 day\'
+                        )
+                        THEN \'VENCENDO\'
+
+                    ELSE \'VALIDO\'
+                END AS situacao_validade,
+
+                CASE
+                    WHEN documento.data_validade IS NULL
+                        THEN NULL
+
+                    ELSE documento.data_validade
+                        - CURRENT_DATE
+                END AS dias_para_vencer
+
+            FROM documentos_colaboradores
+                AS documento
+
+            INNER JOIN colaboradores
+                AS colaborador
+                ON colaborador.id =
+                    documento.colaborador_id
+
+                AND colaborador.organizacao_id =
+                    documento.organizacao_id
+
+            INNER JOIN tipos_documento
+                AS tipo_documento
+                ON tipo_documento.id =
+                    documento.tipo_documento_id
+
+                AND tipo_documento.organizacao_id =
+                    documento.organizacao_id
+
+            LEFT JOIN usuarios
+                AS usuario
+                ON usuario.id =
+                    documento.enviado_por_usuario_id
+
+            WHERE documento.excluido_em IS NULL
+        ';
+
+        $sql .= $filtros['sql'];
+
+        $sql .= '
+            ORDER BY
+                CASE
+                    WHEN documento.ativo = TRUE
+                        AND documento.data_validade
+                            < CURRENT_DATE
+                        THEN 1
+
+                    WHEN documento.ativo = TRUE
+                        AND documento.data_validade
+                            BETWEEN CURRENT_DATE
+                            AND CURRENT_DATE
+                                + (
+                                    CAST(
+                                        :dias_para_vencer_ordem
+                                        AS INTEGER
+                                    )
+                                    * INTERVAL \'1 day\'
+                                )
+                        THEN 2
+
+                    ELSE 3
+                END,
+
+                documento.data_validade ASC
+                    NULLS LAST,
+
+                colaborador.nome_completo ASC,
+
+                documento.criado_em DESC,
+
+                documento.id DESC
+
+            LIMIT :limite
+            OFFSET :offset
+        ';
+
+        $stmt = $this->pdo->prepare($sql);
+
+        $parametros = $filtros['parametros'];
+
+        $parametros[':dias_para_vencer_select'] =
+            max(1, $diasParaVencer);
+
+        $parametros[':dias_para_vencer_ordem'] =
+            max(1, $diasParaVencer);
+
+        $this->vincularParametrosConsulta(
+            $stmt,
+            $parametros
+        );
+
+        $stmt->bindValue(
+            ':limite',
+            $limite,
+            PDO::PARAM_INT
+        );
+
+        $stmt->bindValue(
+            ':offset',
+            $offset,
+            PDO::PARAM_INT
+        );
+
+        $stmt->execute();
+
+        return $stmt->fetchAll(
+            PDO::FETCH_ASSOC
+        );
+    }
+
+    /**
+     * Conta os documentos da listagem geral usando
+     * exatamente os mesmos filtros da consulta paginada.
+     */
+    public function contarGeral(
+        int $organizacaoId,
+        string $busca = '',
+        string $situacao = 'TODOS',
+        string $validade = 'TODOS',
+        int $tipoDocumentoId = 0,
+        int $diasParaVencer = 30
+    ): int {
+        $filtros = $this->montarFiltrosGerais(
+            $organizacaoId,
+            $busca,
+            $situacao,
+            $validade,
+            $tipoDocumentoId,
+            $diasParaVencer
+        );
+
+        $sql = '
+            SELECT COUNT(*)
+
+            FROM documentos_colaboradores
+                AS documento
+
+            INNER JOIN colaboradores
+                AS colaborador
+                ON colaborador.id =
+                    documento.colaborador_id
+
+                AND colaborador.organizacao_id =
+                    documento.organizacao_id
+
+            INNER JOIN tipos_documento
+                AS tipo_documento
+                ON tipo_documento.id =
+                    documento.tipo_documento_id
+
+                AND tipo_documento.organizacao_id =
+                    documento.organizacao_id
+
+            WHERE documento.excluido_em IS NULL
+        ';
+
+        $sql .= $filtros['sql'];
+
+        $stmt = $this->pdo->prepare($sql);
+
+        $this->vincularParametrosConsulta(
+            $stmt,
+            $filtros['parametros']
+        );
+
+        $stmt->execute();
+
+        return (int) $stmt->fetchColumn();
+    }
+
+    /**
+     * Retorna os indicadores usados no cabeçalho da
+     * tela central de documentos.
+     *
+     * Documentos inativos não entram nos alertas de
+     * vencimento.
+     */
+    public function obterIndicadoresGerais(
+        int $organizacaoId,
+        int $diasParaVencer = 30
+    ): array {
+        $diasParaVencer = max(
+            1,
+            min($diasParaVencer, 365)
+        );
+
+        $sql = '
+            SELECT
+                COUNT(*) AS total,
+
+                COUNT(*) FILTER (
+                    WHERE documento.ativo = TRUE
+                ) AS ativos,
+
+                COUNT(*) FILTER (
+                    WHERE documento.ativo = FALSE
+                ) AS inativos,
+
+                COUNT(*) FILTER (
+                    WHERE documento.ativo = TRUE
+
+                      AND documento.data_validade
+                        < CURRENT_DATE
+                ) AS vencidos,
+
+                COUNT(*) FILTER (
+                    WHERE documento.ativo = TRUE
+
+                      AND documento.data_validade
+                        BETWEEN CURRENT_DATE
+
+                        AND CURRENT_DATE
+                            + (
+                                CAST(
+                                    :dias_para_vencer
+                                    AS INTEGER
+                                )
+                                * INTERVAL \'1 day\'
+                            )
+                ) AS vencendo,
+
+                COUNT(*) FILTER (
+                    WHERE documento.ativo = TRUE
+
+                      AND documento.data_validade
+                        IS NULL
+                ) AS sem_validade
+
+            FROM documentos_colaboradores
+                AS documento
+
+            WHERE documento.organizacao_id =
+                :organizacao_id
+
+              AND documento.excluido_em IS NULL
+        ';
+
+        $stmt = $this->pdo->prepare($sql);
+
+        $stmt->bindValue(
+            ':organizacao_id',
+            $organizacaoId,
+            PDO::PARAM_INT
+        );
+
+        $stmt->bindValue(
+            ':dias_para_vencer',
+            $diasParaVencer,
+            PDO::PARAM_INT
+        );
+
+        $stmt->execute();
+
+        $indicadores = $stmt->fetch(
+            PDO::FETCH_ASSOC
+        );
+
+        if (!is_array($indicadores)) {
+            return [
+                'total' => 0,
+                'ativos' => 0,
+                'inativos' => 0,
+                'vencidos' => 0,
+                'vencendo' => 0,
+                'sem_validade' => 0,
+            ];
+        }
+
+        return [
+            'total' =>
+                (int) ($indicadores['total'] ?? 0),
+
+            'ativos' =>
+                (int) ($indicadores['ativos'] ?? 0),
+
+            'inativos' =>
+                (int) ($indicadores['inativos'] ?? 0),
+
+            'vencidos' =>
+                (int) ($indicadores['vencidos'] ?? 0),
+
+            'vencendo' =>
+                (int) ($indicadores['vencendo'] ?? 0),
+
+            'sem_validade' =>
+                (int) (
+                    $indicadores['sem_validade']
+                    ?? 0
+                ),
+        ];
+    }
+
     /**
      * Lista os documentos de um colaborador.
      *
@@ -662,6 +1055,200 @@ class DocumentoColaboradorRepository
         $stmt->execute();
 
         return $stmt->rowCount() > 0;
+    }
+
+
+    /**
+     * Monta os filtros compartilhados pela listagem
+     * geral e pela contagem.
+     */
+    private function montarFiltrosGerais(
+        int $organizacaoId,
+        string $busca,
+        string $situacao,
+        string $validade,
+        int $tipoDocumentoId,
+        int $diasParaVencer
+    ): array {
+        $sql = '
+            AND documento.organizacao_id =
+                :organizacao_id
+        ';
+
+        $parametros = [
+            ':organizacao_id' =>
+                $organizacaoId,
+        ];
+
+        $busca = trim($busca);
+
+        if ($busca !== '') {
+            $sql .= '
+                AND (
+                    documento.titulo
+                        ILIKE :busca_titulo
+
+                    OR documento.numero_documento
+                        ILIKE :busca_numero
+
+                    OR documento.arquivo_nome_original
+                        ILIKE :busca_arquivo
+
+                    OR tipo_documento.nome
+                        ILIKE :busca_tipo
+
+                    OR colaborador.nome_completo
+                        ILIKE :busca_colaborador
+
+                    OR colaborador.matricula
+                        ILIKE :busca_matricula
+                )
+            ';
+
+            $termoBusca =
+                '%' . $busca . '%';
+
+            $parametros[':busca_titulo'] =
+                $termoBusca;
+
+            $parametros[':busca_numero'] =
+                $termoBusca;
+
+            $parametros[':busca_arquivo'] =
+                $termoBusca;
+
+            $parametros[':busca_tipo'] =
+                $termoBusca;
+
+            $parametros[':busca_colaborador'] =
+                $termoBusca;
+
+            $parametros[':busca_matricula'] =
+                $termoBusca;
+        }
+
+        $situacao = strtoupper(
+            trim($situacao)
+        );
+
+        if ($situacao === 'ATIVOS') {
+            $sql .= '
+                AND documento.ativo = TRUE
+            ';
+        } elseif ($situacao === 'INATIVOS') {
+            $sql .= '
+                AND documento.ativo = FALSE
+            ';
+        }
+
+        if ($tipoDocumentoId > 0) {
+            $sql .= '
+                AND documento.tipo_documento_id =
+                    :tipo_documento_id
+            ';
+
+            $parametros[':tipo_documento_id'] =
+                $tipoDocumentoId;
+        }
+
+        $validade = strtoupper(
+            trim($validade)
+        );
+
+        $diasParaVencer = max(
+            1,
+            min($diasParaVencer, 365)
+        );
+
+        if ($validade === 'VENCIDOS') {
+            $sql .= '
+                AND documento.data_validade
+                    < CURRENT_DATE
+            ';
+        } elseif ($validade === 'VENCENDO') {
+            $sql .= '
+                AND documento.data_validade
+                    BETWEEN CURRENT_DATE
+
+                    AND CURRENT_DATE
+                        + (
+                            CAST(
+                                :dias_para_vencer_filtro
+                                AS INTEGER
+                            )
+                            * INTERVAL \'1 day\'
+                        )
+            ';
+
+            $parametros[':dias_para_vencer_filtro'] =
+                $diasParaVencer;
+        } elseif ($validade === 'VALIDOS') {
+            $sql .= '
+                AND documento.data_validade
+                    > CURRENT_DATE
+                        + (
+                            CAST(
+                                :dias_para_vencer_filtro
+                                AS INTEGER
+                            )
+                            * INTERVAL \'1 day\'
+                        )
+            ';
+
+            $parametros[':dias_para_vencer_filtro'] =
+                $diasParaVencer;
+        } elseif (
+            $validade === 'SEM_VALIDADE'
+        ) {
+            $sql .= '
+                AND documento.data_validade
+                    IS NULL
+            ';
+        }
+
+        return [
+            'sql' => $sql,
+            'parametros' => $parametros,
+        ];
+    }
+
+    /**
+     * Vincula parâmetros inteiros e textuais usados nas
+     * consultas de listagem e contagem.
+     */
+    private function vincularParametrosConsulta(
+        PDOStatement $stmt,
+        array $parametros
+    ): void {
+        $parametrosInteiros = [
+            ':organizacao_id',
+            ':tipo_documento_id',
+            ':dias_para_vencer_filtro',
+            ':dias_para_vencer_select',
+            ':dias_para_vencer_ordem',
+        ];
+
+        foreach (
+            $parametros as $parametro => $valor
+        ) {
+            $stmt->bindValue(
+                $parametro,
+                in_array(
+                    $parametro,
+                    $parametrosInteiros,
+                    true
+                )
+                    ? (int) $valor
+                    : (string) $valor,
+                in_array(
+                    $parametro,
+                    $parametrosInteiros,
+                    true
+                )
+                    ? PDO::PARAM_INT
+                    : PDO::PARAM_STR
+            );
+        }
     }
 
     /**

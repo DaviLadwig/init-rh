@@ -12,6 +12,137 @@ class DocumentoColaboradorController
         private ColaboradorService $colaboradorService
     ) {}
 
+
+    /**
+     * Exibe a tela central com os documentos de todos
+     * os colaboradores da organização autenticada.
+     */
+    public function geral(): void
+    {
+        $organizacaoId =
+            $this->obterOrganizacaoId();
+
+        if ($organizacaoId <= 0) {
+            definirFlash(
+                'erro',
+                'A organização do usuário não foi identificada.'
+            );
+
+            redirecionar('dashboard');
+
+            return;
+        }
+
+        $tipoDocumentoId = filter_input(
+            INPUT_GET,
+            'tipo_documento_id',
+            FILTER_VALIDATE_INT
+        );
+
+        $pagina = filter_input(
+            INPUT_GET,
+            'pagina',
+            FILTER_VALIDATE_INT
+        );
+
+        $porPagina = filter_input(
+            INPUT_GET,
+            'por_pagina',
+            FILTER_VALIDATE_INT
+        );
+
+        $diasParaVencer = filter_input(
+            INPUT_GET,
+            'dias_para_vencer',
+            FILTER_VALIDATE_INT
+        );
+
+        $resultado =
+            $this->documentoService
+            ->listarGeral(
+                $organizacaoId,
+                [
+                    'busca' =>
+                        (string) (
+                            $_GET['busca']
+                            ?? ''
+                        ),
+
+                    'situacao' =>
+                        (string) (
+                            $_GET['situacao']
+                            ?? 'TODOS'
+                        ),
+
+                    'validade' =>
+                        (string) (
+                            $_GET['validade']
+                            ?? 'TODOS'
+                        ),
+
+                    'tipo_documento_id' =>
+                        $tipoDocumentoId
+                            ? (int) $tipoDocumentoId
+                            : 0,
+
+                    'pagina' =>
+                        $pagina
+                            ? (int) $pagina
+                            : 1,
+
+                    'por_pagina' =>
+                        $porPagina
+                            ? (int) $porPagina
+                            : 25,
+
+                    'dias_para_vencer' =>
+                        $diasParaVencer
+                            ? (int) $diasParaVencer
+                            : 30,
+                ]
+            );
+
+        $tiposDocumento =
+            $this->tipoDocumentoRepository
+            ->listarAtivos(
+                $organizacaoId
+            );
+
+        renderizarView(
+            'documentos/geral',
+            [
+                'tituloPagina' =>
+                    'Documentos',
+
+                'documentos' =>
+                    $resultado['documentos']
+                    ?? [],
+
+                'indicadores' =>
+                    $resultado['indicadores']
+                    ?? [],
+
+                'filtros' =>
+                    $resultado['filtros']
+                    ?? [],
+
+                'paginacao' =>
+                    $resultado['paginacao']
+                    ?? [],
+
+                'tiposDocumento' =>
+                    $tiposDocumento,
+
+                'sucesso' =>
+                    obterFlash('sucesso'),
+
+                'erro' =>
+                    obterFlash('erro'),
+            ],
+            'layouts/main'
+        );
+    }
+
     /**
      * Lista os documentos anexados a um colaborador.
      */
@@ -300,6 +431,9 @@ class DocumentoColaboradorController
         $organizacaoId =
             $this->obterOrganizacaoId();
 
+        $origem =
+            $this->obterOrigemListagem();
+
         $documentoId = filter_input(
             INPUT_GET,
             'id',
@@ -315,7 +449,11 @@ class DocumentoColaboradorController
                 'O documento informado é inválido.'
             );
 
-            redirecionar('colaboradores');
+            redirecionar(
+                $origem === 'central'
+                    ? 'documentos'
+                    : 'colaboradores'
+            );
 
             return;
         }
@@ -332,7 +470,11 @@ class DocumentoColaboradorController
                 'O documento não foi encontrado.'
             );
 
-            redirecionar('colaboradores');
+            redirecionar(
+                $origem === 'central'
+                    ? 'documentos'
+                    : 'colaboradores'
+            );
 
             return;
         }
@@ -354,7 +496,11 @@ class DocumentoColaboradorController
                 'O colaborador relacionado ao documento não foi encontrado.'
             );
 
-            redirecionar('colaboradores');
+            redirecionar(
+                $origem === 'central'
+                    ? 'documentos'
+                    : 'colaboradores'
+            );
 
             return;
         }
@@ -409,6 +555,9 @@ class DocumentoColaboradorController
                 'tiposDocumento' =>
                 $tiposDocumento,
 
+                'origem' =>
+                $origem,
+
                 'erro' =>
                 obterFlash('erro'),
             ],
@@ -421,6 +570,9 @@ class DocumentoColaboradorController
      */
     public function atualizar(): void
     {
+        $origem =
+            $this->obterOrigemListagem();
+
         $documentoId = filter_input(
             INPUT_POST,
             'documento_id',
@@ -433,7 +585,11 @@ class DocumentoColaboradorController
                 'O documento informado é inválido.'
             );
 
-            redirecionar('colaboradores');
+            redirecionar(
+                $origem === 'central'
+                    ? 'documentos'
+                    : 'colaboradores'
+            );
 
             return;
         }
@@ -453,7 +609,11 @@ class DocumentoColaboradorController
                 'O documento não foi encontrado.'
             );
 
-            redirecionar('colaboradores');
+            redirecionar(
+                $origem === 'central'
+                    ? 'documentos'
+                    : 'colaboradores'
+            );
 
             return;
         }
@@ -470,8 +630,10 @@ class DocumentoColaboradorController
             );
 
             redirecionar(
-                'documentos/editar?id='
-                    . (int) $documentoId
+                $this->destinoEdicao(
+                    (int) $documentoId,
+                    $origem
+                )
             );
 
             return;
@@ -501,8 +663,10 @@ class DocumentoColaboradorController
             );
 
             redirecionar(
-                'documentos/editar?id='
-                    . (int) $documentoId
+                $this->destinoEdicao(
+                    (int) $documentoId,
+                    $origem
+                )
             );
 
             return;
@@ -517,8 +681,10 @@ class DocumentoColaboradorController
         );
 
         redirecionar(
-            'colaboradores/documentos?colaborador_id='
-                . $colaboradorId
+            $this->destinoListagem(
+                $colaboradorId,
+                $origem
+            )
         );
     }
 
@@ -527,6 +693,9 @@ class DocumentoColaboradorController
      */
     public function alterarStatus(): void
     {
+        $origem =
+            $this->obterOrigemListagem();
+
         $documentoId = filter_input(
             INPUT_POST,
             'documento_id',
@@ -539,7 +708,11 @@ class DocumentoColaboradorController
                 'O documento informado é inválido.'
             );
 
-            redirecionar('colaboradores');
+            redirecionar(
+                $origem === 'central'
+                    ? 'documentos'
+                    : 'colaboradores'
+            );
 
             return;
         }
@@ -559,7 +732,11 @@ class DocumentoColaboradorController
                 'O documento não foi encontrado.'
             );
 
-            redirecionar('colaboradores');
+            redirecionar(
+                $origem === 'central'
+                    ? 'documentos'
+                    : 'colaboradores'
+            );
 
             return;
         }
@@ -576,8 +753,10 @@ class DocumentoColaboradorController
             );
 
             redirecionar(
-                'colaboradores/documentos?colaborador_id='
-                    . $colaboradorId
+                $this->destinoListagem(
+                    $colaboradorId,
+                    $origem
+                )
             );
 
             return;
@@ -604,8 +783,10 @@ class DocumentoColaboradorController
         );
 
         redirecionar(
-            'colaboradores/documentos?colaborador_id='
-                . $colaboradorId
+            $this->destinoListagem(
+                $colaboradorId,
+                $origem
+            )
         );
     }
 
@@ -617,6 +798,9 @@ class DocumentoColaboradorController
      */
     public function excluir(): void
     {
+        $origem =
+            $this->obterOrigemListagem();
+
         $documentoId = filter_input(
             INPUT_POST,
             'documento_id',
@@ -629,7 +813,11 @@ class DocumentoColaboradorController
                 'O documento informado é inválido.'
             );
 
-            redirecionar('colaboradores');
+            redirecionar(
+                $origem === 'central'
+                    ? 'documentos'
+                    : 'colaboradores'
+            );
 
             return;
         }
@@ -649,7 +837,11 @@ class DocumentoColaboradorController
                 'O documento não foi encontrado.'
             );
 
-            redirecionar('colaboradores');
+            redirecionar(
+                $origem === 'central'
+                    ? 'documentos'
+                    : 'colaboradores'
+            );
 
             return;
         }
@@ -666,8 +858,10 @@ class DocumentoColaboradorController
             );
 
             redirecionar(
-                'colaboradores/documentos?colaborador_id='
-                    . $colaboradorId
+                $this->destinoListagem(
+                    $colaboradorId,
+                    $origem
+                )
             );
 
             return;
@@ -694,18 +888,59 @@ class DocumentoColaboradorController
         );
 
         redirecionar(
-            'colaboradores/documentos?colaborador_id='
-                . $colaboradorId
+            $this->destinoListagem(
+                $colaboradorId,
+                $origem
+            )
         );
     }
 
     /**
-     * Entrega o arquivo por uma rota protegida.
+     * Exibe o arquivo diretamente no navegador por uma
+     * rota protegida.
+     *
+     * São permitidos somente PDF, JPG e PNG já validados
+     * pelo service. O caminho físico nunca é exposto.
+     */
+    public function visualizar(): void
+    {
+        $this->entregarArquivoProtegido(
+            'inline'
+        );
+    }
+
+    /**
+     * Entrega o arquivo como download por uma rota
+     * protegida.
      *
      * O caminho físico nunca é enviado ao navegador.
      */
     public function baixar(): void
     {
+        $this->entregarArquivoProtegido(
+            'attachment'
+        );
+    }
+
+    /**
+     * Centraliza a preparação e transmissão protegida
+     * usada tanto na visualização quanto no download.
+     *
+     * Modos aceitos:
+     *
+     * - inline: abre no navegador;
+     * - attachment: força o download.
+     */
+    private function entregarArquivoProtegido(
+        string $disposicao
+    ): void {
+        $disposicao = $disposicao === 'inline'
+            ? 'inline'
+            : 'attachment';
+
+        $origem =
+            $this->obterOrigemListagem();
+
         $organizacaoId =
             $this->obterOrganizacaoId();
 
@@ -724,7 +959,11 @@ class DocumentoColaboradorController
                 'O documento informado é inválido.'
             );
 
-            redirecionar('colaboradores');
+            redirecionar(
+                $origem === 'central'
+                    ? 'documentos'
+                    : 'colaboradores'
+            );
 
             return;
         }
@@ -745,7 +984,11 @@ class DocumentoColaboradorController
                 'O documento não foi encontrado.'
             );
 
-            redirecionar('colaboradores');
+            redirecionar(
+                $origem === 'central'
+                    ? 'documentos'
+                    : 'colaboradores'
+            );
 
             return;
         }
@@ -755,6 +998,15 @@ class DocumentoColaboradorController
             ?? 0
         );
 
+        /*
+         * prepararDownload() também confirma:
+         *
+         * - organização;
+         * - documento ativo;
+         * - caminho seguro;
+         * - existência do arquivo;
+         * - hash SHA-256.
+         */
         $resultado =
             $this->documentoService
             ->prepararDownload(
@@ -774,8 +1026,10 @@ class DocumentoColaboradorController
             );
 
             redirecionar(
-                'colaboradores/documentos?colaborador_id='
-                    . $colaboradorId
+                $this->destinoListagem(
+                    $colaboradorId,
+                    $origem
+                )
             );
 
             return;
@@ -797,8 +1051,10 @@ class DocumentoColaboradorController
             );
 
             redirecionar(
-                'colaboradores/documentos?colaborador_id='
-                    . $colaboradorId
+                $this->destinoListagem(
+                    $colaboradorId,
+                    $origem
+                )
             );
 
             return;
@@ -807,12 +1063,16 @@ class DocumentoColaboradorController
         if (headers_sent()) {
             definirFlash(
                 'erro',
-                'Não foi possível iniciar o download do documento.'
+                $disposicao === 'inline'
+                    ? 'Não foi possível abrir o documento.'
+                    : 'Não foi possível iniciar o download do documento.'
             );
 
             redirecionar(
-                'colaboradores/documentos?colaborador_id='
-                    . $colaboradorId
+                $this->destinoListagem(
+                    $colaboradorId,
+                    $origem
+                )
             );
 
             return;
@@ -826,12 +1086,34 @@ class DocumentoColaboradorController
                 )
             );
 
-        $mime = $this->normalizarMimeDownload(
-            (string) (
-                $resultado['mime']
-                ?? ''
+        $mime =
+            $this->normalizarMimeDownload(
+                (string) (
+                    $resultado['mime']
+                    ?? ''
+                )
+            );
+
+        if (
+            $disposicao === 'inline'
+            && !$this->mimePodeSerVisualizado(
+                $mime
             )
-        );
+        ) {
+            definirFlash(
+                'erro',
+                'Este formato não pode ser visualizado no navegador. Faça o download do arquivo.'
+            );
+
+            redirecionar(
+                $this->destinoListagem(
+                    $colaboradorId,
+                    $origem
+                )
+            );
+
+            return;
+        }
 
         $tamanho = filesize($caminho);
 
@@ -842,8 +1124,10 @@ class DocumentoColaboradorController
             );
 
             redirecionar(
-                'colaboradores/documentos?colaborador_id='
-                    . $colaboradorId
+                $this->destinoListagem(
+                    $colaboradorId,
+                    $origem
+                )
             );
 
             return;
@@ -852,7 +1136,7 @@ class DocumentoColaboradorController
         /*
          * Fecha a sessão antes de transmitir o arquivo.
          * Isso evita bloquear outras requisições do mesmo
-         * usuário durante downloads maiores.
+         * usuário durante visualizações ou downloads.
          */
         if (
             session_status()
@@ -874,9 +1158,6 @@ class DocumentoColaboradorController
                 $nomeDownload
             );
 
-        /*
-         * Cabeçalhos de privacidade e proteção.
-         */
         header(
             'Content-Type: ' . $mime
         );
@@ -887,8 +1168,9 @@ class DocumentoColaboradorController
         );
 
         header(
-            'Content-Disposition: attachment; '
-                . 'filename="'
+            'Content-Disposition: '
+                . $disposicao
+                . '; filename="'
                 . $nomeAscii
                 . '"; '
                 . "filename*=UTF-8''"
@@ -900,7 +1182,9 @@ class DocumentoColaboradorController
         );
 
         header(
-            'X-Frame-Options: DENY'
+            $disposicao === 'inline'
+                ? 'X-Frame-Options: SAMEORIGIN'
+                : 'X-Frame-Options: DENY'
         );
 
         header(
@@ -908,7 +1192,7 @@ class DocumentoColaboradorController
         );
 
         header(
-            "Content-Security-Policy: default-src 'none'; sandbox"
+            "Content-Security-Policy: default-src 'none'; frame-ancestors 'self'; sandbox"
         );
 
         header(
@@ -961,6 +1245,80 @@ class DocumentoColaboradorController
         fclose($arquivo);
 
         exit;
+    }
+
+    /**
+     * Limita a visualização direta aos formatos que o
+     * navegador consegue apresentar com segurança.
+     */
+    private function mimePodeSerVisualizado(
+        string $mime
+    ): bool {
+        return in_array(
+            $mime,
+            [
+                'application/pdf',
+                'image/jpeg',
+                'image/png',
+            ],
+            true
+        );
+    }
+
+
+    /**
+     * Identifica de qual listagem a ação foi iniciada.
+     *
+     * Valores aceitos:
+     *
+     * - central: tela geral de documentos;
+     * - colaborador: documentos de uma pessoa.
+     */
+    private function obterOrigemListagem(): string
+    {
+        $origem =
+            $_POST['origem']
+            ?? $_GET['origem']
+            ?? 'colaborador';
+
+        return is_string($origem)
+            && $origem === 'central'
+            ? 'central'
+            : 'colaborador';
+    }
+
+    /**
+     * Define para qual listagem o usuário será enviado
+     * depois de editar, desativar ou excluir.
+     */
+    private function destinoListagem(
+        int $colaboradorId,
+        string $origem
+    ): string {
+        if ($origem === 'central') {
+            return 'documentos';
+        }
+
+        return 'colaboradores/documentos?colaborador_id='
+            . max(0, $colaboradorId);
+    }
+
+    /**
+     * Preserva a origem ao retornar ao formulário de edição.
+     */
+    private function destinoEdicao(
+        int $documentoId,
+        string $origem
+    ): string {
+        $destino =
+            'documentos/editar?id='
+            . max(0, $documentoId);
+
+        if ($origem === 'central') {
+            $destino .= '&origem=central';
+        }
+
+        return $destino;
     }
 
     /**
@@ -1206,7 +1564,7 @@ class DocumentoColaboradorController
 }
 
 /*
-Esse controller já deixa o download protegido contra:
+Esse controller protege a visualização e o download contra:
 
 acesso cruzado entre organizações;
 exposição do caminho físico;

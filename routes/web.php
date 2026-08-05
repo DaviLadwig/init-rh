@@ -693,6 +693,25 @@ return [
         |------------------------------------------------------------------
         */
 
+        '/documentos' => static function () use (
+            $documentoColaboradorController
+        ): void {
+            AuthMiddleware::executar(
+                static function () use (
+                    $documentoColaboradorController
+                ): void {
+                    PermissionMiddleware::executar(
+                        'documentos.visualizar',
+                        static function () use (
+                            $documentoColaboradorController
+                        ): void {
+                            $documentoColaboradorController->geral();
+                        }
+                    );
+                }
+            );
+        },
+
         '/colaboradores/documentos' => static function () use (
             $documentoColaboradorController
         ): void {
@@ -750,6 +769,25 @@ return [
             );
         },
 
+        '/documentos/visualizar' => static function () use (
+            $documentoColaboradorController
+        ): void {
+            AuthMiddleware::executar(
+                static function () use (
+                    $documentoColaboradorController
+                ): void {
+                    PermissionMiddleware::executar(
+                        'documentos.visualizar',
+                        static function () use (
+                            $documentoColaboradorController
+                        ): void {
+                            $documentoColaboradorController->visualizar();
+                        }
+                    );
+                }
+            );
+        },
+
         '/documentos/baixar' => static function () use (
             $documentoColaboradorController
         ): void {
@@ -781,11 +819,11 @@ return [
                 [
                     'sucesso' => true,
                     'mensagem' =>
-                        'O roteamento está funcionando.',
+                    'O roteamento está funcionando.',
                 ],
                 JSON_UNESCAPED_UNICODE
-                | JSON_UNESCAPED_SLASHES
-                | JSON_PRETTY_PRINT
+                    | JSON_UNESCAPED_SLASHES
+                    | JSON_PRETTY_PRINT
             );
         },
 

@@ -51,6 +51,179 @@ class DocumentoColaboradorService
     }
 
     /**
+     * Lista, de forma paginada, os documentos de todos
+     * os colaboradores da organização autenticada.
+     *
+     * Os filtros recebidos podem conter:
+     *
+     * - busca;
+     * - situacao;
+     * - validade;
+     * - tipo_documento_id;
+     * - pagina;
+     * - por_pagina;
+     * - dias_para_vencer.
+     */
+    public function listarGeral(
+        int $organizacaoId,
+        array $filtrosRecebidos = []
+    ): array {
+        $filtros =
+            $this->normalizarFiltrosGerais(
+                $filtrosRecebidos
+            );
+
+        if ($organizacaoId <= 0) {
+            return [
+                'documentos' => [],
+                'indicadores' =>
+                    $this->indicadoresGeraisVazios(),
+                'filtros' => $filtros,
+                'paginacao' =>
+                    $this->montarPaginacao(
+                        0,
+                        1,
+                        $filtros['por_pagina']
+                    ),
+            ];
+        }
+
+        /*
+         * Um tipo inexistente ou pertencente a outra
+         * organização não deve permanecer aplicado.
+         */
+        if ($filtros['tipo_documento_id'] > 0) {
+            $tipoDocumento =
+                $this->tipoDocumentoRepository
+                ->buscarPorId(
+                    $filtros['tipo_documento_id'],
+                    $organizacaoId
+                );
+
+            if (!$tipoDocumento) {
+                $filtros['tipo_documento_id'] = 0;
+            }
+        }
+
+        $total =
+            $this->documentoRepository
+            ->contarGeral(
+                $organizacaoId,
+                $filtros['busca'],
+                $filtros['situacao'],
+                $filtros['validade'],
+                $filtros['tipo_documento_id'],
+                $filtros['dias_para_vencer']
+            );
+
+        $totalPaginas = max(
+            1,
+            (int) ceil(
+                $total
+                / $filtros['por_pagina']
+            )
+        );
+
+        $paginaAtual = min(
+            $filtros['pagina'],
+            $totalPaginas
+        );
+
+        $filtros['pagina'] =
+            $paginaAtual;
+
+        $offset =
+            ($paginaAtual - 1)
+            * $filtros['por_pagina'];
+
+        $documentos = [];
+
+        if ($total > 0) {
+            $documentos =
+                $this->documentoRepository
+                ->listarGeral(
+                    $organizacaoId,
+                    $filtros['busca'],
+                    $filtros['situacao'],
+                    $filtros['validade'],
+                    $filtros['tipo_documento_id'],
+                    $filtros['por_pagina'],
+                    $offset,
+                    $filtros['dias_para_vencer']
+                );
+        }
+
+        $indicadores =
+            $this->obterIndicadoresGerais(
+                $organizacaoId,
+                $filtros['dias_para_vencer']
+            );
+
+        return [
+            'documentos' => $documentos,
+            'indicadores' => $indicadores,
+            'filtros' => $filtros,
+            'paginacao' =>
+                $this->montarPaginacao(
+                    $total,
+                    $paginaAtual,
+                    $filtros['por_pagina']
+                ),
+        ];
+    }
+
+    /**
+     * Retorna os indicadores da tela central.
+     */
+    public function obterIndicadoresGerais(
+        int $organizacaoId,
+        int $diasParaVencer = 30
+    ): array {
+        if ($organizacaoId <= 0) {
+            return $this->indicadoresGeraisVazios();
+        }
+
+        $diasParaVencer = max(
+            1,
+            min($diasParaVencer, 365)
+        );
+
+        $indicadores =
+            $this->documentoRepository
+            ->obterIndicadoresGerais(
+                $organizacaoId,
+                $diasParaVencer
+            );
+
+        return [
+            'total' => (int) (
+                $indicadores['total']
+                ?? 0
+            ),
+            'ativos' => (int) (
+                $indicadores['ativos']
+                ?? 0
+            ),
+            'inativos' => (int) (
+                $indicadores['inativos']
+                ?? 0
+            ),
+            'vencidos' => (int) (
+                $indicadores['vencidos']
+                ?? 0
+            ),
+            'vencendo' => (int) (
+                $indicadores['vencendo']
+                ?? 0
+            ),
+            'sem_validade' => (int) (
+                $indicadores['sem_validade']
+                ?? 0
+            ),
+        ];
+    }
+
+    /**
      * Busca um documento pelo ID, sempre limitado
      * pela organização.
      */
@@ -2098,6 +2271,220 @@ class DocumentoColaboradorService
             ],
             true
         );
+    }
+
+    /**
+     * Normaliza os filtros usados na tela central.
+     */
+    private function normalizarFiltrosGerais(
+        array $filtros
+    ): array {
+        $busca = preg_replace(
+            '/\s+/u',
+            ' ',
+            trim(
+                (string) (
+                    $filtros['busca']
+                    ?? ''
+                )
+            )
+        ) ?? '';
+
+        $busca = mb_substr(
+            $busca,
+            0,
+            150
+        );
+
+        $pagina = max(
+            1,
+            (int) (
+                $filtros['pagina']
+                ?? 1
+            )
+        );
+
+        $porPagina =
+            $this->normalizarQuantidadePorPagina(
+                (int) (
+                    $filtros['por_pagina']
+                    ?? 25
+                )
+            );
+
+        $diasParaVencer = max(
+            1,
+            min(
+                (int) (
+                    $filtros['dias_para_vencer']
+                    ?? 30
+                ),
+                365
+            )
+        );
+
+        return [
+            'busca' => $busca,
+            'situacao' =>
+                $this->normalizarSituacao(
+                    (string) (
+                        $filtros['situacao']
+                        ?? 'TODOS'
+                    )
+                ),
+            'validade' =>
+                $this->normalizarValidade(
+                    (string) (
+                        $filtros['validade']
+                        ?? 'TODOS'
+                    )
+                ),
+            'tipo_documento_id' => max(
+                0,
+                (int) (
+                    $filtros['tipo_documento_id']
+                    ?? 0
+                )
+            ),
+            'pagina' => $pagina,
+            'por_pagina' => $porPagina,
+            'dias_para_vencer' =>
+                $diasParaVencer,
+        ];
+    }
+
+    /**
+     * Normaliza o filtro de validade.
+     */
+    private function normalizarValidade(
+        string $validade
+    ): string {
+        $validade = strtoupper(
+            trim($validade)
+        );
+
+        return in_array(
+            $validade,
+            [
+                'TODOS',
+                'VALIDOS',
+                'VENCENDO',
+                'VENCIDOS',
+                'SEM_VALIDADE',
+            ],
+            true
+        )
+            ? $validade
+            : 'TODOS';
+    }
+
+    /**
+     * Limita as quantidades permitidas por página.
+     */
+    private function normalizarQuantidadePorPagina(
+        int $quantidade
+    ): int {
+        return in_array(
+            $quantidade,
+            [
+                10,
+                25,
+                50,
+                100,
+            ],
+            true
+        )
+            ? $quantidade
+            : 25;
+    }
+
+    /**
+     * Monta os dados utilizados pelos links de paginação.
+     */
+    private function montarPaginacao(
+        int $totalRegistros,
+        int $paginaAtual,
+        int $porPagina
+    ): array {
+        $totalRegistros = max(
+            0,
+            $totalRegistros
+        );
+
+        $paginaAtual = max(
+            1,
+            $paginaAtual
+        );
+
+        $porPagina = max(
+            1,
+            $porPagina
+        );
+
+        $totalPaginas = max(
+            1,
+            (int) ceil(
+                $totalRegistros
+                / $porPagina
+            )
+        );
+
+        $paginaAtual = min(
+            $paginaAtual,
+            $totalPaginas
+        );
+
+        $offset =
+            ($paginaAtual - 1)
+            * $porPagina;
+
+        return [
+            'pagina_atual' => $paginaAtual,
+            'por_pagina' => $porPagina,
+            'total_registros' =>
+                $totalRegistros,
+            'total_paginas' =>
+                $totalPaginas,
+            'registro_inicial' =>
+                $totalRegistros > 0
+                    ? $offset + 1
+                    : 0,
+            'registro_final' =>
+                $totalRegistros > 0
+                    ? min(
+                        $offset + $porPagina,
+                        $totalRegistros
+                    )
+                    : 0,
+            'tem_anterior' =>
+                $paginaAtual > 1,
+            'tem_proxima' =>
+                $paginaAtual < $totalPaginas,
+            'pagina_anterior' => max(
+                1,
+                $paginaAtual - 1
+            ),
+            'pagina_proxima' => min(
+                $totalPaginas,
+                $paginaAtual + 1
+            ),
+        ];
+    }
+
+    /**
+     * Estrutura padrão para organizações inválidas ou
+     * sem documentos cadastrados.
+     */
+    private function indicadoresGeraisVazios(): array
+    {
+        return [
+            'total' => 0,
+            'ativos' => 0,
+            'inativos' => 0,
+            'vencidos' => 0,
+            'vencendo' => 0,
+            'sem_validade' => 0,
+        ];
     }
 
     /**
