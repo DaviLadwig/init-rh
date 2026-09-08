@@ -731,4 +731,4 @@ $obterValidade = static function (
             </nav>
         <?php endif; ?>
     </section>
-</section>J
+</section>
